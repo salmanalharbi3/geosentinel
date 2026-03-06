@@ -1,56 +1,237 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="ar">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentinel</title>
 
-<title>GeoSentinel</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    * { box-sizing: border-box; }
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: #fff;
+    }
 
-<style>
+    header {
+      padding: 14px 18px;
+      background: #111a2d;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
 
-body{
-margin:0;
-font-family:Arial;
-background:#0a0f1e;
-color:white;
-}
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
 
-h1{
-text-align:center;
-padding:10px;
-}
+    header p {
+      margin: 6px 0 0;
+      color: #b9c4d6;
+      font-size: 14px;
+    }
 
-#map{
-height:90vh;
-}
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: calc(100vh - 78px);
+    }
 
-</style>
+    .sidebar {
+      background: #0f1728;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      padding: 16px;
+      overflow-y: auto;
+    }
 
+    .sidebar h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .card {
+      background: #162033;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .card p {
+      margin: 0;
+      color: #c5d0e0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .legend {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #d7dfeb;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 280px 1fr;
+      }
+
+      .sidebar {
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <header>
+    <h1>GeoSentinel</h1>
+    <p>منصة خرائط وتحليل جيوسياسي مفتوح المصدر — نسخة أولية</p>
+  </header>
 
-<h1>GeoSentinel - OSINT Map</h1>
+  <div class="layout">
+    <div class="sidebar">
+      <h2>لوحة المتابعة</h2>
 
-<div id="map"></div>
+      <div class="card">
+        <h3>الطبقات الحالية</h3>
+        <p class="legend">
+          ● مواقع/قواعد ثابتة<br />
+          ● أحداث ميدانية أو جيوسياسية مضافة يدويًا
+        </p>
+      </div>
 
-<script>
+      <div class="card">
+        <h3>ملاحظات النسخة الأولى</h3>
+        <p>
+          هذه النسخة مخصصة للعرض والتأسيس فقط، وليست نظام تتبع حي. سنضيف لاحقًا
+          مصادر بيانات منظمة وواجهة أقوى.
+        </p>
+      </div>
 
-var map = L.map('map').setView([25, 45], 5);
+      <div class="card">
+        <h3>آخر الأحداث</h3>
+        <p>
+          - حدث 1: تحديث يدوي<br />
+          - حدث 2: تحديث يدوي<br />
+          - حدث 3: تحديث يدوي
+        </p>
+      </div>
+    </div>
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-attribution:'Map data'
-}).addTo(map);
+    <div id="map"></div>
+  </div>
 
-var marker = L.marker([24.7136, 46.6753]).addTo(map);
+  <script>
+    // إنشاء الخريطة
+    const map = L.map("map").setView([26, 45], 5);
 
-marker.bindPopup("Riyadh").openPopup();
+    // طبقة الأساس
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-</script>
+    // طبقة المواقع الثابتة
+    const sitesLayer = L.layerGroup();
 
+    const sites = [
+      {
+        name: "الرياض",
+        coords: [24.7136, 46.6753],
+        type: "مركز رئيسي",
+        note: "مثال على موقع ثابت يمكن تطويره لاحقًا."
+      },
+      {
+        name: "الدمام",
+        coords: [26.4207, 50.0888],
+        type: "موقع ساحلي/لوجستي",
+        note: "مثال توضيحي ضمن النسخة الأولى."
+      },
+      {
+        name: "جدة",
+        coords: [21.4858, 39.1925],
+        type: "موقع غربي",
+        note: "يمكن لاحقًا ربطه بتصنيف خاص."
+      }
+    ];
+
+    sites.forEach(site => {
+      L.marker(site.coords)
+        .bindPopup(`
+          <b>${site.name}</b><br>
+          النوع: ${site.type}<br>
+          ${site.note}
+        `)
+        .addTo(sitesLayer);
+    });
+
+    // طبقة الأحداث
+    const eventsLayer = L.layerGroup();
+
+    const events = [
+      {
+        title: "حدث تجريبي 1",
+        coords: [25.2048, 55.2708],
+        date: "2026-03-06",
+        details: "مثال على حدث مضاف يدويًا."
+      },
+      {
+        title: "حدث تجريبي 2",
+        coords: [29.3759, 47.9774],
+        date: "2026-03-05",
+        details: "يمكن لاحقًا ربطه بتصنيف: سياسي / أمني / بحري."
+      },
+      {
+        title: "حدث تجريبي 3",
+        coords: [33.3152, 44.3661],
+        date: "2026-03-04",
+        details: "يوضح فكرة طبقة الأحداث المنفصلة عن طبقة المواقع."
+      }
+    ];
+
+    events.forEach(event => {
+      L.circleMarker(event.coords, {
+        radius: 8,
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.7
+      })
+      .bindPopup(`
+        <b>${event.title}</b><br>
+        التاريخ: ${event.date}<br>
+        ${event.details}
+      `)
+      .addTo(eventsLayer);
+    });
+
+    // إضافة الطبقات للخريطة
+    sitesLayer.addTo(map);
+    eventsLayer.addTo(map);
+
+    // التحكم بالطبقات
+    const overlays = {
+      "المواقع الثابتة": sitesLayer,
+      "الأحداث": eventsLayer
+    };
+
+    L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+  </script>
 </body>
-
 </html>
