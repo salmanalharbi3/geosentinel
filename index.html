@@ -1,16 +1,55 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <title>GeoSentinel</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#0a0f1e;
+color:white;
+}
+
+h1{
+text-align:center;
+padding:10px;
+}
+
+#map{
+height:90vh;
+}
+
+</style>
+
 </head>
 
-<body style="background:black;color:white;text-align:center;font-family:Arial">
+<body>
 
-<h1>GeoSentinel</h1>
+<h1>GeoSentinel - OSINT Map</h1>
 
-<p>Open Source Intelligence Map</p>
+<div id="map"></div>
 
-<p>Coming soon...</p>
+<script>
+
+var map = L.map('map').setView([25, 45], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'Map data'
+}).addTo(map);
+
+var marker = L.marker([24.7136, 46.6753]).addTo(map);
+
+marker.bindPopup("Riyadh").openPopup();
+
+</script>
 
 </body>
 
