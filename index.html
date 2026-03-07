@@ -5,35 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GeoSentinel</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     :root{
-      --bg:#07111f;
-      --bg-soft:#0d1b2e;
-      --panel:#0f1f35;
-      --panel-2:#132742;
+      --bg:#050b14;
+      --panel:#0b1524;
+      --panel2:#102038;
       --text:#eef4ff;
-      --muted:#9fb1ca;
+      --muted:#98abc8;
+      --line:rgba(255,255,255,.08);
       --accent:#4da3ff;
-      --accent-2:#7ef0c7;
-      --border:rgba(255,255,255,.08);
-      --shadow:0 10px 30px rgba(0,0,0,.28);
+      --accent2:#66ffd1;
+      --danger:#ff4d6d;
       --radius:18px;
+      --shadow:0 12px 30px rgba(0,0,0,.28);
     }
 
     *{box-sizing:border-box}
-    html,body{margin:0;height:100%}
+    html,body{height:100%;margin:0}
     body{
       font-family: Arial, sans-serif;
       background:
-        radial-gradient(circle at top right, rgba(77,163,255,.12), transparent 25%),
-        radial-gradient(circle at top left, rgba(126,240,199,.08), transparent 20%),
-        linear-gradient(180deg, #06101c 0%, #091426 100%);
+        radial-gradient(circle at top right, rgba(77,163,255,.14), transparent 25%),
+        radial-gradient(circle at top left, rgba(102,255,209,.08), transparent 20%),
+        linear-gradient(180deg, #040a13 0%, #09111d 100%);
       color:var(--text);
     }
 
@@ -49,56 +46,65 @@
       justify-content:space-between;
       gap:16px;
       padding:14px 18px;
-      background:rgba(7,17,31,.78);
+      background:rgba(5,11,20,.82);
       backdrop-filter: blur(12px);
-      border-bottom:1px solid var(--border);
+      border-bottom:1px solid var(--line);
     }
 
     .brand{
       display:flex;
       align-items:center;
       gap:14px;
+      min-width:0;
     }
 
     .logo{
       width:42px;
       height:42px;
       border-radius:14px;
-      background:linear-gradient(135deg, var(--accent), var(--accent-2));
+      background:linear-gradient(135deg, var(--accent), var(--accent2));
       box-shadow:var(--shadow);
+      flex-shrink:0;
     }
 
     .brand-text h1{
       margin:0;
       font-size:20px;
-      font-weight:700;
     }
 
     .brand-text p{
       margin:4px 0 0;
-      font-size:12px;
       color:var(--muted);
+      font-size:12px;
     }
 
     .actions{
       display:flex;
       align-items:center;
       gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
     .btn{
-      border:1px solid var(--border);
+      border:1px solid var(--line);
       background:var(--panel);
       color:var(--text);
       border-radius:12px;
       padding:10px 14px;
       cursor:pointer;
       font-size:14px;
+      transition:.2s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:rgba(77,163,255,.35);
     }
 
     .btn.primary{
-      background:linear-gradient(135deg, rgba(77,163,255,.18), rgba(126,240,199,.14));
-      border-color:rgba(77,163,255,.28);
+      background:linear-gradient(135deg, rgba(77,163,255,.18), rgba(102,255,209,.12));
+      border-color:rgba(77,163,255,.25);
     }
 
     .content{
@@ -108,15 +114,15 @@
     }
 
     .sidebar{
+      background:rgba(7,14,24,.55);
+      border-left:1px solid var(--line);
       padding:16px;
-      border-left:1px solid var(--border);
       overflow:auto;
-      background:rgba(7,17,31,.4);
     }
 
     .panel{
-      background:linear-gradient(180deg, rgba(19,39,66,.9), rgba(13,27,46,.9));
-      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(16,32,56,.95), rgba(11,21,36,.95));
+      border:1px solid var(--line);
       border-radius:var(--radius);
       padding:16px;
       margin-bottom:14px;
@@ -125,6 +131,7 @@
 
     .panel h2,.panel h3{
       margin:0 0 10px;
+      font-size:18px;
     }
 
     .muted{
@@ -142,7 +149,7 @@
 
     .stat{
       background:rgba(255,255,255,.03);
-      border:1px solid var(--border);
+      border:1px solid var(--line);
       border-radius:14px;
       padding:12px;
     }
@@ -158,6 +165,18 @@
       font-weight:700;
     }
 
+    .mode-buttons{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .mode-btn{
+      width:100%;
+      text-align:start;
+    }
+
     .feed{
       display:flex;
       flex-direction:column;
@@ -166,21 +185,21 @@
 
     .feed-item{
       background:rgba(255,255,255,.03);
-      border:1px solid var(--border);
+      border:1px solid var(--line);
       border-radius:14px;
       padding:12px;
     }
 
     .feed-item .time{
+      color:var(--accent2);
       font-size:12px;
-      color:var(--accent-2);
       margin-bottom:6px;
     }
 
     .feed-item .title{
       font-size:14px;
       font-weight:700;
-      margin-bottom:5px;
+      margin-bottom:4px;
     }
 
     .feed-item .desc{
@@ -211,7 +230,7 @@
 
     .chip{
       background:rgba(10,20,35,.82);
-      border:1px solid var(--border);
+      border:1px solid var(--line);
       color:var(--text);
       padding:10px 12px;
       border-radius:999px;
@@ -225,19 +244,27 @@
       width:8px;
       height:8px;
       border-radius:50%;
-      background:#ff4d6d;
+      background:var(--danger);
       margin-inline-end:8px;
-      box-shadow:0 0 12px #ff4d6d;
+      box-shadow:0 0 12px var(--danger);
     }
 
     @media (max-width: 980px){
       .content{
         grid-template-columns:1fr;
-        grid-template-rows:1fr 320px;
+        grid-template-rows:1fr 340px;
       }
       .sidebar{
         border-left:none;
-        border-top:1px solid var(--border);
+        border-top:1px solid var(--line);
+      }
+      .topbar{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .actions{
+        width:100%;
+        justify-content:flex-start;
       }
     }
   </style>
@@ -249,13 +276,13 @@
         <div class="logo"></div>
         <div class="brand-text">
           <h1 id="brandTitle">GeoSentinel</h1>
-          <p id="brandSubtitle">منصة تحليل جيوسياسي وخرائط استخبارات مفتوحة المصدر</p>
+          <p id="brandSubtitle">منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة</p>
         </div>
       </div>
 
       <div class="actions">
         <button class="btn" id="langToggle">English</button>
-        <button class="btn primary" id="liveBtn"><span class="live-dot"></span><span id="liveText">وضع المتابعة الحية</span></button>
+        <button class="btn primary"><span class="live-dot"></span><span id="liveLabel">وضع المتابعة الحية</span></button>
       </div>
     </div>
 
@@ -264,39 +291,41 @@
         <div class="panel">
           <h2 id="overviewTitle">نظرة عامة</h2>
           <div class="muted" id="overviewText">
-            واجهة أولية احترافية لمنصة خرائط وتحليل جيوسياسي. هذه النسخة تعرض المواقع والأحداث بصيغة منظمة، ومهيأة لاحقًا للربط مع تغذية بيانات حية.
+            GeoSentinel منصة أولية تجمع بين الخريطة الاستخباراتية العالمية، والتحليل الجيوسياسي، ورصد الأحداث ذات الصلة بالطاقة. يبدأ العرض افتراضيًا على الشرق الأوسط مع إمكانية تكثيف التركيز على إيران.
           </div>
 
           <div class="stats">
             <div class="stat">
-              <div class="label" id="stat1Label">المواقع المعروضة</div>
-              <div class="value" id="sitesCount">3</div>
+              <div class="label" id="eventsLabel">الأحداث</div>
+              <div class="value" id="eventsCount">0</div>
             </div>
             <div class="stat">
-              <div class="label" id="stat2Label">الأحداث الحالية</div>
-              <div class="value" id="eventsCount">3</div>
+              <div class="label" id="focusLabel">وضع التركيز</div>
+              <div class="value" id="focusValue">ME</div>
             </div>
           </div>
         </div>
 
         <div class="panel">
-          <h3 id="layersTitle">الطبقات</h3>
-          <div class="muted" id="layersText">
-            استخدم أداة الطبقات داخل الخريطة لإظهار المواقع أو الأحداث أو إخفائها.
+          <h3 id="viewModesTitle">أوضاع العرض</h3>
+          <div class="mode-buttons">
+            <button class="btn mode-btn" onclick="setViewMode('global')" id="btnGlobal">العالم</button>
+            <button class="btn mode-btn" onclick="setViewMode('middle_east')" id="btnMiddleEast">الشرق الأوسط</button>
+            <button class="btn mode-btn primary" onclick="setViewMode('iran')" id="btnIran">Iran Focus</button>
           </div>
         </div>
 
         <div class="panel">
-          <h3 id="feedTitle">آخر التحديثات</h3>
+          <h3 id="feedTitle">آخر الأحداث</h3>
           <div class="feed" id="feed"></div>
         </div>
       </aside>
 
       <main class="map-wrap">
         <div class="floating">
-          <div class="chip" id="chip1">الخريطة التشغيلية</div>
-          <div class="chip" id="chip2">الشرق الأوسط</div>
-          <div class="chip" id="chip3">نسخة تجريبية متقدمة</div>
+          <div class="chip" id="chip1">خريطة تشغيلية</div>
+          <div class="chip" id="chip2">استخبارات مفتوحة</div>
+          <div class="chip" id="chip3">التركيز: الشرق الأوسط</div>
         </div>
         <div id="map"></div>
       </main>
@@ -307,88 +336,49 @@
     const translations = {
       ar: {
         dir: "rtl",
-        brandSubtitle: "منصة تحليل جيوسياسي وخرائط استخبارات مفتوحة المصدر",
-        liveText: "وضع المتابعة الحية",
+        brandSubtitle: "منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة",
+        liveLabel: "وضع المتابعة الحية",
         overviewTitle: "نظرة عامة",
-        overviewText: "واجهة أولية احترافية لمنصة خرائط وتحليل جيوسياسي. هذه النسخة تعرض المواقع والأحداث بصيغة منظمة، ومهيأة لاحقًا للربط مع تغذية بيانات حية.",
-        stat1Label: "المواقع المعروضة",
-        stat2Label: "الأحداث الحالية",
-        layersTitle: "الطبقات",
-        layersText: "استخدم أداة الطبقات داخل الخريطة لإظهار المواقع أو الأحداث أو إخفائها.",
-        feedTitle: "آخر التحديثات",
-        chip1: "الخريطة التشغيلية",
-        chip2: "الشرق الأوسط",
-        chip3: "نسخة تجريبية متقدمة",
-        langButton: "English",
-        feedItems: [
-          { time: "الآن", title: "تهيئة المنصة", desc: "تم بناء الواجهة الداكنة المتقدمة وإعدادها للعمل ثنائي اللغة." },
-          { time: "تحديث", title: "تهيئة طبقة الأحداث", desc: "الأحداث الحالية ما تزال تجريبية وقابلة للاستبدال بتغذية حية." },
-          { time: "قريبًا", title: "بث مباشر", desc: "الخطوة التالية ستكون ربط الأحداث بمصدر بيانات منظم عبر JSON أو Function." }
-        ]
+        overviewText: "GeoSentinel منصة أولية تجمع بين الخريطة الاستخباراتية العالمية، والتحليل الجيوسياسي، ورصد الأحداث ذات الصلة بالطاقة. يبدأ العرض افتراضيًا على الشرق الأوسط مع إمكانية تكثيف التركيز على إيران.",
+        eventsLabel: "الأحداث",
+        focusLabel: "وضع التركيز",
+        viewModesTitle: "أوضاع العرض",
+        feedTitle: "آخر الأحداث",
+        chip1: "خريطة تشغيلية",
+        chip2: "استخبارات مفتوحة",
+        chip3MiddleEast: "التركيز: الشرق الأوسط",
+        chip3Global: "التركيز: العالم",
+        chip3Iran: "التركيز: إيران",
+        btnGlobal: "العالم",
+        btnMiddleEast: "الشرق الأوسط",
+        btnIran: "Iran Focus",
+        langButton: "English"
       },
       en: {
         dir: "ltr",
-        brandSubtitle: "Geopolitical analysis and open-source intelligence mapping platform",
-        liveText: "Live monitoring mode",
+        brandSubtitle: "Open-source intelligence, geopolitical analysis, and energy platform",
+        liveLabel: "Live monitoring mode",
         overviewTitle: "Overview",
-        overviewText: "A polished first-stage interface for a geopolitical mapping and analysis platform. This version presents sites and events in a structured way and is ready for later live-data integration.",
-        stat1Label: "Displayed sites",
-        stat2Label: "Current events",
-        layersTitle: "Layers",
-        layersText: "Use the layers control on the map to show or hide sites and events.",
-        feedTitle: "Latest updates",
+        overviewText: "GeoSentinel is an early-stage platform combining a global intelligence map, geopolitical analysis, and energy-relevant event tracking. It starts with a Middle East default view and an enhanced Iran focus mode.",
+        eventsLabel: "Events",
+        focusLabel: "Focus",
+        viewModesTitle: "View modes",
+        feedTitle: "Latest events",
         chip1: "Operational map",
-        chip2: "Middle East",
-        chip3: "Advanced preview",
-        langButton: "العربية",
-        feedItems: [
-          { time: "Now", title: "Platform initialized", desc: "The advanced dark interface has been built and prepared for bilingual use." },
-          { time: "Update", title: "Events layer prepared", desc: "Current events are still demo data and can be replaced with a live feed." },
-          { time: "Next", title: "Live stream", desc: "The next step is connecting events to a structured data source via JSON or Function." }
-        ]
+        chip2: "Open-source intelligence",
+        chip3MiddleEast: "Focus: Middle East",
+        chip3Global: "Focus: Global",
+        chip3Iran: "Focus: Iran",
+        btnGlobal: "Global",
+        btnMiddleEast: "Middle East",
+        btnIran: "Iran Focus",
+        langButton: "العربية"
       }
     };
 
     let currentLang = "ar";
-
-    function renderFeed(lang){
-      const feed = document.getElementById("feed");
-      feed.innerHTML = "";
-      translations[lang].feedItems.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "feed-item";
-        div.innerHTML = `
-          <div class="time">${item.time}</div>
-          <div class="title">${item.title}</div>
-          <div class="desc">${item.desc}</div>
-        `;
-        feed.appendChild(div);
-      });
-    }
-
-    function setLanguage(lang){
-      currentLang = lang;
-      document.documentElement.lang = lang;
-      document.documentElement.dir = translations[lang].dir;
-      document.getElementById("brandSubtitle").textContent = translations[lang].brandSubtitle;
-      document.getElementById("liveText").textContent = translations[lang].liveText;
-      document.getElementById("overviewTitle").textContent = translations[lang].overviewTitle;
-      document.getElementById("overviewText").textContent = translations[lang].overviewText;
-      document.getElementById("stat1Label").textContent = translations[lang].stat1Label;
-      document.getElementById("stat2Label").textContent = translations[lang].stat2Label;
-      document.getElementById("layersTitle").textContent = translations[lang].layersTitle;
-      document.getElementById("layersText").textContent = translations[lang].layersText;
-      document.getElementById("feedTitle").textContent = translations[lang].feedTitle;
-      document.getElementById("chip1").textContent = translations[lang].chip1;
-      document.getElementById("chip2").textContent = translations[lang].chip2;
-      document.getElementById("chip3").textContent = translations[lang].chip3;
-      document.getElementById("langToggle").textContent = translations[lang].langButton;
-      renderFeed(lang);
-    }
-
-    document.getElementById("langToggle").addEventListener("click", () => {
-      setLanguage(currentLang === "ar" ? "en" : "ar");
-    });
+    let currentMode = "middle_east";
+    let events = [];
 
     const map = L.map("map", { zoomControl: true }).setView([26, 45], 5);
 
@@ -396,64 +386,127 @@
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
 
-    const sitesLayer = L.layerGroup();
-    const eventsLayer = L.layerGroup();
+    const eventsLayer = L.layerGroup().addTo(map);
 
-    const sites = [
-      { nameAr:"الرياض", nameEn:"Riyadh", coords:[24.7136,46.6753], typeAr:"مركز رئيسي", typeEn:"Primary hub" },
-      { nameAr:"جدة", nameEn:"Jeddah", coords:[21.4858,39.1925], typeAr:"موقع غربي", typeEn:"Western site" },
-      { nameAr:"الدمام", nameEn:"Dammam", coords:[26.4207,50.0888], typeAr:"موقع لوجستي", typeEn:"Logistics site" }
-    ];
+    function getModeConfig(mode){
+      const modes = {
+        global: { center: [20, 10], zoom: 2, focusLabel: "GLB" },
+        middle_east: { center: [26, 45], zoom: 5, focusLabel: "ME" },
+        iran: { center: [32, 53], zoom: 6, focusLabel: "IR" }
+      };
+      return modes[mode];
+    }
 
-    const events = [
-      { titleAr:"حدث تجريبي 1", titleEn:"Demo event 1", coords:[25.2048,55.2708], date:"2026-03-06", descAr:"إدخال تجريبي قابل للاستبدال.", descEn:"Demo entry, replaceable later." },
-      { titleAr:"حدث تجريبي 2", titleEn:"Demo event 2", coords:[29.3759,47.9774], date:"2026-03-05", descAr:"حدث مبدئي ضمن طبقة الأحداث.", descEn:"Initial event in the events layer." },
-      { titleAr:"حدث تجريبي 3", titleEn:"Demo event 3", coords:[33.3152,44.3661], date:"2026-03-04", descAr:"مثال على عنصر حدث مستقل.", descEn:"Example of a standalone event item." }
-    ];
+    function setViewMode(mode){
+      currentMode = mode;
+      const cfg = getModeConfig(mode);
+      map.setView(cfg.center, cfg.zoom);
+      document.getElementById("focusValue").textContent = cfg.focusLabel;
 
-    function buildLayers(lang){
-      sitesLayer.clearLayers();
-      eventsLayer.clearLayers();
+      if(currentLang === "ar"){
+        document.getElementById("chip3").textContent =
+          mode === "global" ? translations.ar.chip3Global :
+          mode === "iran" ? translations.ar.chip3Iran :
+          translations.ar.chip3MiddleEast;
+      } else {
+        document.getElementById("chip3").textContent =
+          mode === "global" ? translations.en.chip3Global :
+          mode === "iran" ? translations.en.chip3Iran :
+          translations.en.chip3MiddleEast;
+      }
+    }
 
-      sites.forEach(site => {
-        const title = lang === "ar" ? site.nameAr : site.nameEn;
-        const type = lang === "ar" ? site.typeAr : site.typeEn;
-        L.marker(site.coords)
-          .bindPopup(`<b>${title}</b><br>${type}`)
-          .addTo(sitesLayer);
+    function renderFeed(){
+      const feed = document.getElementById("feed");
+      feed.innerHTML = "";
+
+      const filtered = events.filter(event => {
+        if(currentMode === "iran") return event.country === "Iran";
+        if(currentMode === "middle_east") return ["Iran", "Saudi Arabia", "Iraq", "UAE", "Qatar", "Kuwait", "Oman", "Bahrain", "Yemen", "Jordan", "Syria", "Lebanon", "Israel", "Palestine"].includes(event.country);
+        return true;
       });
 
-      events.forEach(event => {
-        const title = lang === "ar" ? event.titleAr : event.titleEn;
-        const desc = lang === "ar" ? event.descAr : event.descEn;
+      filtered.slice(0, 8).forEach(event => {
+        const div = document.createElement("div");
+        div.className = "feed-item";
+        div.innerHTML = `
+          <div class="time">${event.date}</div>
+          <div class="title">${event.title}</div>
+          <div class="desc">${event.country} — ${event.type}</div>
+        `;
+        feed.appendChild(div);
+      });
+    }
+
+    function drawEvents(){
+      eventsLayer.clearLayers();
+
+      const filtered = events.filter(event => {
+        if(currentMode === "iran") return event.country === "Iran";
+        if(currentMode === "middle_east") return ["Iran", "Saudi Arabia", "Iraq", "UAE", "Qatar", "Kuwait", "Oman", "Bahrain", "Yemen", "Jordan", "Syria", "Lebanon", "Israel", "Palestine"].includes(event.country);
+        return true;
+      });
+
+      filtered.forEach(event => {
         L.circleMarker(event.coords, {
           radius: 8,
           weight: 2,
           opacity: 1,
-          fillOpacity: 0.75
+          fillOpacity: 0.8
         })
-        .bindPopup(`<b>${title}</b><br>${event.date}<br>${desc}`)
+        .bindPopup(`
+          <b>${event.title}</b><br>
+          ${event.country}<br>
+          ${event.date}<br>
+          ${event.type}
+        `)
         .addTo(eventsLayer);
       });
 
-      document.getElementById("sitesCount").textContent = sites.length;
-      document.getElementById("eventsCount").textContent = events.length;
+      document.getElementById("eventsCount").textContent = filtered.length;
+      renderFeed();
     }
 
-    buildLayers("ar");
-    sitesLayer.addTo(map);
-    eventsLayer.addTo(map);
+    async function loadEvents(){
+      try {
+        const response = await fetch("data/events.json");
+        events = await response.json();
+        drawEvents();
+      } catch (error) {
+        console.error("Failed to load events:", error);
+      }
+    }
 
-    const layerControl = L.control.layers(null, {
-      "Sites / المواقع": sitesLayer,
-      "Events / الأحداث": eventsLayer
-    }, { collapsed: false }).addTo(map);
+    function setLanguage(lang){
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      document.documentElement.dir = translations[lang].dir;
+      document.getElementById("brandSubtitle").textContent = translations[lang].brandSubtitle;
+      document.getElementById("liveLabel").textContent = translations[lang].liveLabel;
+      document.getElementById("overviewTitle").textContent = translations[lang].overviewTitle;
+      document.getElementById("overviewText").textContent = translations[lang].overviewText;
+      document.getElementById("eventsLabel").textContent = translations[lang].eventsLabel;
+      document.getElementById("focusLabel").textContent = translations[lang].focusLabel;
+      document.getElementById("viewModesTitle").textContent = translations[lang].viewModesTitle;
+      document.getElementById("feedTitle").textContent = translations[lang].feedTitle;
+      document.getElementById("chip1").textContent = translations[lang].chip1;
+      document.getElementById("chip2").textContent = translations[lang].chip2;
+      document.getElementById("btnGlobal").textContent = translations[lang].btnGlobal;
+      document.getElementById("btnMiddleEast").textContent = translations[lang].btnMiddleEast;
+      document.getElementById("btnIran").textContent = translations[lang].btnIran;
+      document.getElementById("langToggle").textContent = translations[lang].langButton;
+
+      setViewMode(currentMode);
+      renderFeed();
+    }
 
     document.getElementById("langToggle").addEventListener("click", () => {
-      buildLayers(currentLang === "ar" ? "en" : "ar");
+      setLanguage(currentLang === "ar" ? "en" : "ar");
     });
 
     setLanguage("ar");
+    setViewMode("middle_east");
+    loadEvents();
   </script>
 </body>
 </html>
