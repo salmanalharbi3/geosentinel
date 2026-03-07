@@ -5,22 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GeoSentinel</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     :root{
       --bg:#050b14;
+      --bg2:#08111d;
       --panel:#0b1524;
       --panel2:#102038;
       --text:#eef4ff;
-      --muted:#98abc8;
+      --muted:#93a8c8;
       --line:rgba(255,255,255,.08);
-      --accent:#4da3ff;
-      --accent2:#66ffd1;
+      --accent:#53a8ff;
+      --accent2:#67ffd0;
       --danger:#ff4d6d;
+      --warning:#ffc857;
       --radius:18px;
-      --shadow:0 12px 30px rgba(0,0,0,.28);
+      --shadow:0 12px 28px rgba(0,0,0,.28);
     }
 
     *{box-sizing:border-box}
@@ -28,9 +33,9 @@
     body{
       font-family: Arial, sans-serif;
       background:
-        radial-gradient(circle at top right, rgba(77,163,255,.14), transparent 25%),
-        radial-gradient(circle at top left, rgba(102,255,209,.08), transparent 20%),
-        linear-gradient(180deg, #040a13 0%, #09111d 100%);
+        radial-gradient(circle at top right, rgba(83,168,255,.13), transparent 24%),
+        radial-gradient(circle at top left, rgba(103,255,208,.08), transparent 20%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
       color:var(--text);
     }
 
@@ -44,9 +49,9 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:16px;
+      gap:14px;
       padding:14px 18px;
-      background:rgba(5,11,20,.82);
+      background:rgba(5,11,20,.84);
       backdrop-filter: blur(12px);
       border-bottom:1px solid var(--line);
     }
@@ -70,17 +75,17 @@
     .brand-text h1{
       margin:0;
       font-size:20px;
+      letter-spacing:.3px;
     }
 
     .brand-text p{
       margin:4px 0 0;
-      color:var(--muted);
       font-size:12px;
+      color:var(--muted);
     }
 
     .actions{
       display:flex;
-      align-items:center;
       gap:10px;
       flex-wrap:wrap;
       justify-content:flex-end;
@@ -94,34 +99,34 @@
       padding:10px 14px;
       cursor:pointer;
       font-size:14px;
-      transition:.2s ease;
+      transition:.18s ease;
     }
 
     .btn:hover{
       transform:translateY(-1px);
-      border-color:rgba(77,163,255,.35);
+      border-color:rgba(83,168,255,.35);
     }
 
     .btn.primary{
-      background:linear-gradient(135deg, rgba(77,163,255,.18), rgba(102,255,209,.12));
-      border-color:rgba(77,163,255,.25);
+      background:linear-gradient(135deg, rgba(83,168,255,.18), rgba(103,255,208,.12));
+      border-color:rgba(83,168,255,.22);
     }
 
-    .content{
+    .layout{
       display:grid;
-      grid-template-columns:360px 1fr;
+      grid-template-columns:380px 1fr;
       min-height:0;
     }
 
     .sidebar{
-      background:rgba(7,14,24,.55);
+      background:rgba(7,14,24,.56);
       border-left:1px solid var(--line);
       padding:16px;
       overflow:auto;
     }
 
     .panel{
-      background:linear-gradient(180deg, rgba(16,32,56,.95), rgba(11,21,36,.95));
+      background:linear-gradient(180deg, rgba(16,32,56,.96), rgba(11,21,36,.96));
       border:1px solid var(--line);
       border-radius:var(--radius);
       padding:16px;
@@ -131,7 +136,7 @@
 
     .panel h2,.panel h3{
       margin:0 0 10px;
-      font-size:18px;
+      font-size:17px;
     }
 
     .muted{
@@ -165,9 +170,8 @@
       font-weight:700;
     }
 
-    .mode-buttons{
+    .mode-grid{
       display:grid;
-      grid-template-columns:1fr;
       gap:10px;
       margin-top:12px;
     }
@@ -181,6 +185,7 @@
       display:flex;
       flex-direction:column;
       gap:10px;
+      margin-top:10px;
     }
 
     .feed-item{
@@ -190,10 +195,14 @@
       padding:12px;
     }
 
-    .feed-item .time{
-      color:var(--accent2);
+    .feed-item .meta{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
       font-size:12px;
+      color:var(--accent2);
       margin-bottom:6px;
+      flex-wrap:wrap;
     }
 
     .feed-item .title{
@@ -203,9 +212,19 @@
     }
 
     .feed-item .desc{
-      font-size:13px;
       color:var(--muted);
+      font-size:13px;
       line-height:1.6;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:5px 8px;
+      border-radius:999px;
+      font-size:11px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
     }
 
     .map-wrap{
@@ -226,6 +245,7 @@
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      max-width:calc(100% - 32px);
     }
 
     .chip{
@@ -249,15 +269,25 @@
       box-shadow:0 0 12px var(--danger);
     }
 
-    @media (max-width: 980px){
-      .content{
+    .status-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    @media (max-width: 1024px){
+      .layout{
         grid-template-columns:1fr;
-        grid-template-rows:1fr 340px;
+        grid-template-rows:1fr 360px;
       }
       .sidebar{
         border-left:none;
         border-top:1px solid var(--line);
       }
+    }
+
+    @media (max-width: 720px){
       .topbar{
         flex-direction:column;
         align-items:flex-start;
@@ -266,32 +296,38 @@
         width:100%;
         justify-content:flex-start;
       }
+      .stats{
+        grid-template-columns:1fr 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="topbar">
+    <header class="topbar">
       <div class="brand">
         <div class="logo"></div>
         <div class="brand-text">
-          <h1 id="brandTitle">GeoSentinel</h1>
+          <h1>GeoSentinel</h1>
           <p id="brandSubtitle">منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة</p>
         </div>
       </div>
 
       <div class="actions">
         <button class="btn" id="langToggle">English</button>
-        <button class="btn primary"><span class="live-dot"></span><span id="liveLabel">وضع المتابعة الحية</span></button>
+        <button class="btn" id="refreshBtn">تحديث</button>
+        <button class="btn primary" id="liveModeBtn">
+          <span class="live-dot"></span><span id="liveModeText">وضع المتابعة</span>
+        </button>
       </div>
-    </div>
+    </header>
 
-    <div class="content">
+    <div class="layout">
       <aside class="sidebar">
-        <div class="panel">
+        <section class="panel">
           <h2 id="overviewTitle">نظرة عامة</h2>
           <div class="muted" id="overviewText">
-            GeoSentinel منصة أولية تجمع بين الخريطة الاستخباراتية العالمية، والتحليل الجيوسياسي، ورصد الأحداث ذات الصلة بالطاقة. يبدأ العرض افتراضيًا على الشرق الأوسط مع إمكانية تكثيف التركيز على إيران.
+            GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالفضاء الإقليمي والعالمي مع تركيز افتتاحي على الشرق الأوسط وإيران.
           </div>
 
           <div class="stats">
@@ -300,25 +336,30 @@
               <div class="value" id="eventsCount">0</div>
             </div>
             <div class="stat">
-              <div class="label" id="focusLabel">وضع التركيز</div>
-              <div class="value" id="focusValue">ME</div>
+              <div class="label" id="sitesLabel">المواقع</div>
+              <div class="value" id="sitesCount">0</div>
             </div>
           </div>
-        </div>
 
-        <div class="panel">
-          <h3 id="viewModesTitle">أوضاع العرض</h3>
-          <div class="mode-buttons">
-            <button class="btn mode-btn" onclick="setViewMode('global')" id="btnGlobal">العالم</button>
-            <button class="btn mode-btn" onclick="setViewMode('middle_east')" id="btnMiddleEast">الشرق الأوسط</button>
-            <button class="btn mode-btn primary" onclick="setViewMode('iran')" id="btnIran">Iran Focus</button>
+          <div class="status-row">
+            <span class="badge" id="focusBadge">التركيز: الشرق الأوسط</span>
+            <span class="badge" id="syncBadge">المصدر: ملفات JSON</span>
           </div>
-        </div>
+        </section>
 
-        <div class="panel">
+        <section class="panel">
+          <h3 id="modesTitle">أوضاع العرض</h3>
+          <div class="mode-grid">
+            <button class="btn mode-btn" id="globalBtn">العالم</button>
+            <button class="btn mode-btn primary" id="middleEastBtn">الشرق الأوسط</button>
+            <button class="btn mode-btn" id="iranBtn">Iran Focus</button>
+          </div>
+        </section>
+
+        <section class="panel">
           <h3 id="feedTitle">آخر الأحداث</h3>
           <div class="feed" id="feed"></div>
-        </div>
+        </section>
       </aside>
 
       <main class="map-wrap">
@@ -333,52 +374,76 @@
   </div>
 
   <script>
+    const MIDDLE_EAST_COUNTRIES = [
+      "Iran","Saudi Arabia","Iraq","UAE","Qatar","Kuwait","Oman","Bahrain",
+      "Yemen","Jordan","Syria","Lebanon","Israel","Palestine","Turkey","Egypt"
+    ];
+
     const translations = {
       ar: {
         dir: "rtl",
         brandSubtitle: "منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة",
-        liveLabel: "وضع المتابعة الحية",
         overviewTitle: "نظرة عامة",
-        overviewText: "GeoSentinel منصة أولية تجمع بين الخريطة الاستخباراتية العالمية، والتحليل الجيوسياسي، ورصد الأحداث ذات الصلة بالطاقة. يبدأ العرض افتراضيًا على الشرق الأوسط مع إمكانية تكثيف التركيز على إيران.",
+        overviewText: "GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالفضاء الإقليمي والعالمي مع تركيز افتتاحي على الشرق الأوسط وإيران.",
         eventsLabel: "الأحداث",
-        focusLabel: "وضع التركيز",
-        viewModesTitle: "أوضاع العرض",
+        sitesLabel: "المواقع",
+        modesTitle: "أوضاع العرض",
         feedTitle: "آخر الأحداث",
+        focusGlobal: "التركيز: العالم",
+        focusMiddleEast: "التركيز: الشرق الأوسط",
+        focusIran: "التركيز: إيران",
+        syncText: "المصدر: ملفات JSON",
         chip1: "خريطة تشغيلية",
         chip2: "استخبارات مفتوحة",
-        chip3MiddleEast: "التركيز: الشرق الأوسط",
-        chip3Global: "التركيز: العالم",
-        chip3Iran: "التركيز: إيران",
-        btnGlobal: "العالم",
-        btnMiddleEast: "الشرق الأوسط",
-        btnIran: "Iran Focus",
-        langButton: "English"
+        chipGlobal: "التركيز: العالم",
+        chipMiddleEast: "التركيز: الشرق الأوسط",
+        chipIran: "التركيز: إيران",
+        globalBtn: "العالم",
+        middleEastBtn: "الشرق الأوسط",
+        iranBtn: "Iran Focus",
+        refreshBtn: "تحديث",
+        liveModeText: "وضع المتابعة",
+        langButton: "English",
+        siteTypeText: "النوع",
+        eventTypeText: "التصنيف",
+        countryText: "الدولة",
+        noEvents: "لا توجد أحداث معروضة في هذا النطاق حاليًا."
       },
       en: {
         dir: "ltr",
         brandSubtitle: "Open-source intelligence, geopolitical analysis, and energy platform",
-        liveLabel: "Live monitoring mode",
         overviewTitle: "Overview",
-        overviewText: "GeoSentinel is an early-stage platform combining a global intelligence map, geopolitical analysis, and energy-relevant event tracking. It starts with a Middle East default view and an enhanced Iran focus mode.",
+        overviewText: "GeoSentinel is an early-stage platform for open-source intelligence mapping, geopolitical analysis, and event-centered regional and global monitoring, with an initial focus on the Middle East and Iran.",
         eventsLabel: "Events",
-        focusLabel: "Focus",
-        viewModesTitle: "View modes",
+        sitesLabel: "Sites",
+        modesTitle: "View modes",
         feedTitle: "Latest events",
+        focusGlobal: "Focus: Global",
+        focusMiddleEast: "Focus: Middle East",
+        focusIran: "Focus: Iran",
+        syncText: "Source: JSON files",
         chip1: "Operational map",
         chip2: "Open-source intelligence",
-        chip3MiddleEast: "Focus: Middle East",
-        chip3Global: "Focus: Global",
-        chip3Iran: "Focus: Iran",
-        btnGlobal: "Global",
-        btnMiddleEast: "Middle East",
-        btnIran: "Iran Focus",
-        langButton: "العربية"
+        chipGlobal: "Focus: Global",
+        chipMiddleEast: "Focus: Middle East",
+        chipIran: "Focus: Iran",
+        globalBtn: "Global",
+        middleEastBtn: "Middle East",
+        iranBtn: "Iran Focus",
+        refreshBtn: "Refresh",
+        liveModeText: "Monitoring mode",
+        langButton: "العربية",
+        siteTypeText: "Type",
+        eventTypeText: "Category",
+        countryText: "Country",
+        noEvents: "No events are currently displayed in this scope."
       }
     };
 
     let currentLang = "ar";
     let currentMode = "middle_east";
     let events = [];
+    let sites = [];
 
     const map = L.map("map", { zoomControl: true }).setView([26, 45], 5);
 
@@ -387,126 +452,198 @@
     }).addTo(map);
 
     const eventsLayer = L.layerGroup().addTo(map);
+    const sitesLayer = L.layerGroup().addTo(map);
+
+    const layersControl = L.control.layers(null, {
+      "Events / الأحداث": eventsLayer,
+      "Sites / المواقع": sitesLayer
+    }, { collapsed: false }).addTo(map);
 
     function getModeConfig(mode){
-      const modes = {
-        global: { center: [20, 10], zoom: 2, focusLabel: "GLB" },
-        middle_east: { center: [26, 45], zoom: 5, focusLabel: "ME" },
-        iran: { center: [32, 53], zoom: 6, focusLabel: "IR" }
+      const config = {
+        global: { center: [20, 10], zoom: 2 },
+        middle_east: { center: [26, 45], zoom: 5 },
+        iran: { center: [32, 53], zoom: 6 }
       };
-      return modes[mode];
+      return config[mode];
     }
 
-    function setViewMode(mode){
-      currentMode = mode;
-      const cfg = getModeConfig(mode);
-      map.setView(cfg.center, cfg.zoom);
-      document.getElementById("focusValue").textContent = cfg.focusLabel;
-
-      if(currentLang === "ar"){
-        document.getElementById("chip3").textContent =
-          mode === "global" ? translations.ar.chip3Global :
-          mode === "iran" ? translations.ar.chip3Iran :
-          translations.ar.chip3MiddleEast;
-      } else {
-        document.getElementById("chip3").textContent =
-          mode === "global" ? translations.en.chip3Global :
-          mode === "iran" ? translations.en.chip3Iran :
-          translations.en.chip3MiddleEast;
+    function filterEventsByMode(data){
+      if(currentMode === "iran"){
+        return data.filter(item => item.country === "Iran");
       }
+      if(currentMode === "middle_east"){
+        return data.filter(item => MIDDLE_EAST_COUNTRIES.includes(item.country));
+      }
+      return data;
+    }
+
+    function filterSitesByMode(data){
+      if(currentMode === "iran"){
+        return data.filter(item => item.country === "Iran");
+      }
+      if(currentMode === "middle_east"){
+        return data.filter(item => MIDDLE_EAST_COUNTRIES.includes(item.country));
+      }
+      return data;
     }
 
     function renderFeed(){
       const feed = document.getElementById("feed");
       feed.innerHTML = "";
 
-      const filtered = events.filter(event => {
-        if(currentMode === "iran") return event.country === "Iran";
-        if(currentMode === "middle_east") return ["Iran", "Saudi Arabia", "Iraq", "UAE", "Qatar", "Kuwait", "Oman", "Bahrain", "Yemen", "Jordan", "Syria", "Lebanon", "Israel", "Palestine"].includes(event.country);
-        return true;
-      });
+      const filteredEvents = filterEventsByMode(events);
 
-      filtered.slice(0, 8).forEach(event => {
+      if(filteredEvents.length === 0){
+        feed.innerHTML = `<div class="feed-item"><div class="desc">${translations[currentLang].noEvents}</div></div>`;
+        return;
+      }
+
+      filteredEvents.slice(0, 8).forEach(event => {
         const div = document.createElement("div");
         div.className = "feed-item";
         div.innerHTML = `
-          <div class="time">${event.date}</div>
-          <div class="title">${event.title}</div>
-          <div class="desc">${event.country} — ${event.type}</div>
+          <div class="meta">
+            <span>${event.date || ""}</span>
+            <span>${event.country || ""}</span>
+          </div>
+          <div class="title">${event.title || "Untitled event"}</div>
+          <div class="desc">${event.type || ""}</div>
         `;
         feed.appendChild(div);
       });
     }
 
-    function drawEvents(){
-      eventsLayer.clearLayers();
+    function drawSites(){
+      sitesLayer.clearLayers();
+      const filteredSites = filterSitesByMode(sites);
 
-      const filtered = events.filter(event => {
-        if(currentMode === "iran") return event.country === "Iran";
-        if(currentMode === "middle_east") return ["Iran", "Saudi Arabia", "Iraq", "UAE", "Qatar", "Kuwait", "Oman", "Bahrain", "Yemen", "Jordan", "Syria", "Lebanon", "Israel", "Palestine"].includes(event.country);
-        return true;
+      filteredSites.forEach(site => {
+        L.marker(site.coords)
+          .bindPopup(`
+            <b>${site.name || "Site"}</b><br>
+            ${translations[currentLang].countryText}: ${site.country || "-"}<br>
+            ${translations[currentLang].siteTypeText}: ${site.type || "-"}
+          `)
+          .addTo(sitesLayer);
       });
 
-      filtered.forEach(event => {
+      document.getElementById("sitesCount").textContent = filteredSites.length;
+    }
+
+    function drawEvents(){
+      eventsLayer.clearLayers();
+      const filteredEvents = filterEventsByMode(events);
+
+      filteredEvents.forEach(event => {
         L.circleMarker(event.coords, {
           radius: 8,
           weight: 2,
           opacity: 1,
           fillOpacity: 0.8
         })
-        .bindPopup(`
-          <b>${event.title}</b><br>
-          ${event.country}<br>
-          ${event.date}<br>
-          ${event.type}
-        `)
-        .addTo(eventsLayer);
+          .bindPopup(`
+            <b>${event.title || "Event"}</b><br>
+            ${translations[currentLang].countryText}: ${event.country || "-"}<br>
+            ${event.date || "-"}<br>
+            ${translations[currentLang].eventTypeText}: ${event.type || "-"}
+          `)
+          .addTo(eventsLayer);
       });
 
-      document.getElementById("eventsCount").textContent = filtered.length;
+      document.getElementById("eventsCount").textContent = filteredEvents.length;
       renderFeed();
     }
 
+    function redrawAll(){
+      drawSites();
+      drawEvents();
+    }
+
     async function loadEvents(){
-      try {
-        const response = await fetch("data/events.json");
-        events = await response.json();
-        drawEvents();
-      } catch (error) {
-        console.error("Failed to load events:", error);
+      const response = await fetch("data/events.json");
+      if(!response.ok) throw new Error("Failed to load events.json");
+      events = await response.json();
+    }
+
+    async function loadSites(){
+      const response = await fetch("data/sites.json");
+      if(!response.ok) throw new Error("Failed to load sites.json");
+      sites = await response.json();
+    }
+
+    async function refreshData(){
+      try{
+        await Promise.all([loadEvents(), loadSites()]);
+        redrawAll();
+      }catch(error){
+        console.error(error);
       }
+    }
+
+    function updateModeTexts(){
+      const t = translations[currentLang];
+
+      if(currentMode === "global"){
+        document.getElementById("focusBadge").textContent = t.focusGlobal;
+        document.getElementById("chip3").textContent = t.chipGlobal;
+      } else if(currentMode === "iran"){
+        document.getElementById("focusBadge").textContent = t.focusIran;
+        document.getElementById("chip3").textContent = t.chipIran;
+      } else {
+        document.getElementById("focusBadge").textContent = t.focusMiddleEast;
+        document.getElementById("chip3").textContent = t.chipMiddleEast;
+      }
+    }
+
+    function setViewMode(mode){
+      currentMode = mode;
+      const cfg = getModeConfig(mode);
+      map.setView(cfg.center, cfg.zoom);
+      updateModeTexts();
+      redrawAll();
     }
 
     function setLanguage(lang){
       currentLang = lang;
-      document.documentElement.lang = lang;
-      document.documentElement.dir = translations[lang].dir;
-      document.getElementById("brandSubtitle").textContent = translations[lang].brandSubtitle;
-      document.getElementById("liveLabel").textContent = translations[lang].liveLabel;
-      document.getElementById("overviewTitle").textContent = translations[lang].overviewTitle;
-      document.getElementById("overviewText").textContent = translations[lang].overviewText;
-      document.getElementById("eventsLabel").textContent = translations[lang].eventsLabel;
-      document.getElementById("focusLabel").textContent = translations[lang].focusLabel;
-      document.getElementById("viewModesTitle").textContent = translations[lang].viewModesTitle;
-      document.getElementById("feedTitle").textContent = translations[lang].feedTitle;
-      document.getElementById("chip1").textContent = translations[lang].chip1;
-      document.getElementById("chip2").textContent = translations[lang].chip2;
-      document.getElementById("btnGlobal").textContent = translations[lang].btnGlobal;
-      document.getElementById("btnMiddleEast").textContent = translations[lang].btnMiddleEast;
-      document.getElementById("btnIran").textContent = translations[lang].btnIran;
-      document.getElementById("langToggle").textContent = translations[lang].langButton;
+      const t = translations[lang];
 
-      setViewMode(currentMode);
-      renderFeed();
+      document.documentElement.lang = lang;
+      document.documentElement.dir = t.dir;
+
+      document.getElementById("brandSubtitle").textContent = t.brandSubtitle;
+      document.getElementById("overviewTitle").textContent = t.overviewTitle;
+      document.getElementById("overviewText").textContent = t.overviewText;
+      document.getElementById("eventsLabel").textContent = t.eventsLabel;
+      document.getElementById("sitesLabel").textContent = t.sitesLabel;
+      document.getElementById("modesTitle").textContent = t.modesTitle;
+      document.getElementById("feedTitle").textContent = t.feedTitle;
+      document.getElementById("syncBadge").textContent = t.syncText;
+      document.getElementById("chip1").textContent = t.chip1;
+      document.getElementById("chip2").textContent = t.chip2;
+      document.getElementById("globalBtn").textContent = t.globalBtn;
+      document.getElementById("middleEastBtn").textContent = t.middleEastBtn;
+      document.getElementById("iranBtn").textContent = t.iranBtn;
+      document.getElementById("refreshBtn").textContent = t.refreshBtn;
+      document.getElementById("liveModeText").textContent = t.liveModeText;
+      document.getElementById("langToggle").textContent = t.langButton;
+
+      updateModeTexts();
+      redrawAll();
     }
 
     document.getElementById("langToggle").addEventListener("click", () => {
       setLanguage(currentLang === "ar" ? "en" : "ar");
     });
 
+    document.getElementById("refreshBtn").addEventListener("click", refreshData);
+    document.getElementById("globalBtn").addEventListener("click", () => setViewMode("global"));
+    document.getElementById("middleEastBtn").addEventListener("click", () => setViewMode("middle_east"));
+    document.getElementById("iranBtn").addEventListener("click", () => setViewMode("iran"));
+
     setLanguage("ar");
     setViewMode("middle_east");
-    loadEvents();
+    refreshData();
   </script>
 </body>
 </html>
