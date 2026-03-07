@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Naval exercise",
+    "country": "Iran",
+    "coords": [25.9, 54.3],
+    "date": "2026-03-08",
+    "type": "military"
+  },
+  {
+    "title": "Oil tanker movement",
+    "country": "Saudi Arabia",
+    "coords": [26.4, 50.1],
+    "date": "2026-03-08",
+    "type": "energy"
+  },
+  {
+    "title": "Missile test report",
+    "country": "Iran",
+    "coords": [35.7, 51.4],
+    "date": "2026-03-07",
+    "type": "military"
+  }
+]
