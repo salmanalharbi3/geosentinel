@@ -13,21 +13,21 @@
 
   <style>
     :root{
-      --bg:#030913;
-      --bg-soft:#081423;
-      --panel:#0c182a;
-      --panel-2:#12243b;
-      --panel-3:#162d4a;
-      --text:#edf4ff;
-      --muted:#99abc6;
+      --bg:#020811;
+      --bg-soft:#081322;
+      --panel:#0d1a2d;
+      --panel-2:#13243d;
+      --panel-3:#183152;
+      --text:#eef5ff;
+      --muted:#9cb0cd;
       --line:rgba(255,255,255,.08);
-      --line-strong:rgba(83,168,255,.25);
+      --line-strong:rgba(83,168,255,.28);
       --accent:#53a8ff;
       --accent-2:#67ffd0;
       --danger:#ff5b7f;
       --warning:#ffc857;
-      --success:#53ffa8;
-      --shadow:0 14px 34px rgba(0,0,0,.30);
+      --success:#4dffab;
+      --shadow:0 14px 34px rgba(0,0,0,.32);
       --radius:18px;
     }
 
@@ -38,7 +38,7 @@
       font-family: Arial, sans-serif;
       color:var(--text);
       background:
-        radial-gradient(circle at top right, rgba(83,168,255,.12), transparent 24%),
+        radial-gradient(circle at top right, rgba(83,168,255,.13), transparent 24%),
         radial-gradient(circle at top left, rgba(103,255,208,.08), transparent 20%),
         linear-gradient(180deg, #020811 0%, #06111d 100%);
       overflow:hidden;
@@ -56,7 +56,7 @@
       justify-content:space-between;
       gap:16px;
       padding:14px 18px;
-      background:rgba(3,9,19,.86);
+      background:rgba(2,8,17,.88);
       backdrop-filter: blur(12px);
       border-bottom:1px solid var(--line);
     }
@@ -90,7 +90,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width:420px;
+      max-width:460px;
     }
 
     .actions{
@@ -128,19 +128,19 @@
 
     .layout{
       display:grid;
-      grid-template-columns:390px 1fr;
+      grid-template-columns:400px 1fr;
       min-height:0;
     }
 
     .sidebar{
-      background:rgba(8,20,35,.56);
+      background:rgba(8,20,35,.58);
       border-left:1px solid var(--line);
       padding:16px;
       overflow:auto;
     }
 
     .panel{
-      background:linear-gradient(180deg, rgba(18,36,59,.95), rgba(12,24,42,.96));
+      background:linear-gradient(180deg, rgba(19,36,61,.96), rgba(11,23,40,.96));
       border:1px solid var(--line);
       border-radius:var(--radius);
       padding:16px;
@@ -161,7 +161,7 @@
 
     .stats{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns:1fr 1fr 1fr;
       gap:10px;
       margin-top:12px;
     }
@@ -180,7 +180,7 @@
     }
 
     .stat .value{
-      font-size:22px;
+      font-size:21px;
       font-weight:700;
     }
 
@@ -369,7 +369,7 @@
     }
 
     .chip{
-      background:rgba(10,20,35,.82);
+      background:rgba(10,20,35,.84);
       border:1px solid var(--line);
       color:var(--text);
       padding:10px 12px;
@@ -384,9 +384,9 @@
       bottom:16px;
       left:16px;
       z-index:999;
-      width:280px;
+      width:290px;
       max-width:calc(100% - 32px);
-      background:rgba(10,20,35,.86);
+      background:rgba(10,20,35,.88);
       border:1px solid var(--line);
       border-radius:16px;
       padding:12px;
@@ -415,7 +415,7 @@
       right:16px;
       bottom:16px;
       z-index:1000;
-      background:rgba(10,20,35,.90);
+      background:rgba(10,20,35,.92);
       color:var(--text);
       border:1px solid var(--line);
       border-radius:12px;
@@ -434,10 +434,10 @@
       transform:translateY(0);
     }
 
-    @media (max-width: 1040px){
+    @media (max-width: 1100px){
       .layout{
         grid-template-columns:1fr;
-        grid-template-rows:1fr 390px;
+        grid-template-rows:1fr 420px;
       }
       .sidebar{
         border-left:none;
@@ -483,6 +483,7 @@
       <div class="actions">
         <button class="btn" id="langToggle">English</button>
         <button class="btn" id="refreshBtn">تحديث</button>
+        <button class="btn" id="fitBtn">تركيز ذكي</button>
         <button class="btn primary active" id="autoRefreshBtn">
           <span class="live-dot"></span>
           <span id="autoRefreshText">تحديث تلقائي</span>
@@ -506,6 +507,10 @@
             <div class="stat">
               <div class="label" id="sitesLabel">المواقع</div>
               <div class="value" id="sitesCount">0</div>
+            </div>
+            <div class="stat">
+              <div class="label" id="newsLabel">الأخبار</div>
+              <div class="value" id="newsCount">0</div>
             </div>
           </div>
 
@@ -547,6 +552,11 @@
               <label class="toggle">
                 <span id="toggleOnlyMilitaryText">عسكري فقط</span>
                 <input type="checkbox" id="militaryOnlyToggle" />
+              </label>
+
+              <label class="toggle">
+                <span id="toggleSatelliteText">طبقة فضائية</span>
+                <input type="checkbox" id="satelliteToggle" />
               </label>
             </div>
           </div>
@@ -608,6 +618,7 @@
         overviewText: "GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالأقاليم الحساسة مع تركيز افتتاحي على الشرق الأوسط وإيران.",
         eventsLabel: "الأحداث",
         sitesLabel: "المواقع",
+        newsLabel: "الأخبار",
         controlsTitle: "أدوات التحكم",
         focusGlobal: "التركيز: العالم",
         focusMiddleEast: "التركيز: الشرق الأوسط",
@@ -623,6 +634,7 @@
         middleEastBtn: "الشرق الأوسط",
         iranBtn: "Iran Focus",
         refreshBtn: "تحديث",
+        fitBtn: "تركيز ذكي",
         autoRefreshText: "تحديث تلقائي",
         langButton: "English",
         searchPlaceholder: "ابحث عن دولة أو موقع أو حدث",
@@ -630,6 +642,7 @@
         toggleEventsText: "إظهار الأحداث",
         toggleNewsText: "إظهار الأخبار",
         toggleOnlyMilitaryText: "عسكري فقط",
+        toggleSatelliteText: "طبقة فضائية",
         tabFeed: "الخلاصة",
         tabSites: "المواقع",
         tabNews: "الأخبار",
@@ -645,7 +658,9 @@
         openSourceText: "فتح المصدر",
         refreshedText: "تم تحديث البيانات بنجاح.",
         autoOnText: "تم تفعيل التحديث التلقائي.",
-        autoOffText: "تم إيقاف التحديث التلقائي."
+        autoOffText: "تم إيقاف التحديث التلقائي.",
+        satelliteOnText: "تم تفعيل الطبقة الفضائية.",
+        satelliteOffText: "تم إخفاء الطبقة الفضائية."
       },
       en: {
         dir: "ltr",
@@ -654,6 +669,7 @@
         overviewText: "GeoSentinel is an early-stage platform for open-source intelligence mapping, geopolitical analysis, and region-sensitive event tracking, with an initial focus on the Middle East and Iran.",
         eventsLabel: "Events",
         sitesLabel: "Sites",
+        newsLabel: "News",
         controlsTitle: "Controls",
         focusGlobal: "Focus: Global",
         focusMiddleEast: "Focus: Middle East",
@@ -669,6 +685,7 @@
         middleEastBtn: "Middle East",
         iranBtn: "Iran Focus",
         refreshBtn: "Refresh",
+        fitBtn: "Smart focus",
         autoRefreshText: "Auto refresh",
         langButton: "العربية",
         searchPlaceholder: "Search country, site, or event",
@@ -676,6 +693,7 @@
         toggleEventsText: "Show events",
         toggleNewsText: "Show news",
         toggleOnlyMilitaryText: "Military only",
+        toggleSatelliteText: "Satellite layer",
         tabFeed: "Feed",
         tabSites: "Sites",
         tabNews: "News",
@@ -691,7 +709,9 @@
         openSourceText: "Open source",
         refreshedText: "Data refreshed successfully.",
         autoOnText: "Auto refresh enabled.",
-        autoOffText: "Auto refresh disabled."
+        autoOffText: "Auto refresh disabled.",
+        satelliteOnText: "Satellite layer enabled.",
+        satelliteOffText: "Satellite layer hidden."
       }
     };
 
@@ -709,21 +729,31 @@
       showSites: true,
       showEvents: true,
       showNews: true,
-      militaryOnly: false
+      militaryOnly: false,
+      showSatellite: false
     };
 
     const map = L.map("map", { zoomControl: true }).setView([26, 45], 5);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const baseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
+
+    // طبقة فضائية/تصويرية عامة اختيارية
+    const satelliteLayer = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution: "Tiles &copy; Esri"
+      }
+    );
 
     const eventsLayer = L.layerGroup().addTo(map);
     const sitesLayer = L.layerGroup().addTo(map);
 
     L.control.layers(null, {
       "Events / الأحداث": eventsLayer,
-      "Sites / المواقع": sitesLayer
+      "Sites / المواقع": sitesLayer,
+      "Satellite / فضائية": satelliteLayer
     }, { collapsed: false }).addTo(map);
 
     function escapeHtml(value){
@@ -777,7 +807,10 @@
 
     function applyMilitaryFilter(items){
       if(!state.militaryOnly) return items;
-      return items.filter(item => String(item.type || item.category || "").toLowerCase().includes("military"));
+      return items.filter(item => {
+        const tag = String(item.type || item.category || "").toLowerCase();
+        return tag.includes("military");
+      });
     }
 
     function getFilteredEvents(){
@@ -810,7 +843,7 @@
             weight: 2,
             color: "#53a8ff",
             fillColor: "#53a8ff",
-            fillOpacity: 0.8
+            fillOpacity: 0.85
           });
 
           marker.bindPopup(`
@@ -840,7 +873,7 @@
             weight: 2,
             color,
             fillColor: color,
-            fillOpacity: 0.82
+            fillOpacity: 0.85
           });
 
           marker.bindPopup(`
@@ -933,6 +966,8 @@
       const container = document.getElementById("newsFeed");
       container.innerHTML = "";
 
+      document.getElementById("newsCount").textContent = filteredNews.length;
+
       if(!state.showNews || filteredNews.length === 0){
         container.innerHTML = `<div class="feed-item"><div class="desc">${escapeHtml(translations[currentLang].noFeed)}</div></div>`;
         return;
@@ -958,6 +993,27 @@
       drawSites();
       drawEvents();
       renderNewsFeed();
+    }
+
+    function smartFit(){
+      const points = [];
+
+      if(state.showSites){
+        getFilteredSites().forEach(item => {
+          if(Array.isArray(item.coords) && item.coords.length === 2) points.push(item.coords);
+        });
+      }
+
+      if(state.showEvents){
+        getFilteredEvents().forEach(item => {
+          if(Array.isArray(item.coords) && item.coords.length === 2) points.push(item.coords);
+        });
+      }
+
+      if(points.length === 0) return;
+
+      const bounds = L.latLngBounds(points);
+      map.fitBounds(bounds, { padding: [40, 40] });
     }
 
     async function loadEvents(){
@@ -1044,6 +1100,7 @@
       document.getElementById("overviewText").textContent = t.overviewText;
       document.getElementById("eventsLabel").textContent = t.eventsLabel;
       document.getElementById("sitesLabel").textContent = t.sitesLabel;
+      document.getElementById("newsLabel").textContent = t.newsLabel;
       document.getElementById("controlsTitle").textContent = t.controlsTitle;
       document.getElementById("syncBadge").textContent = t.syncText;
       document.getElementById("liveStatusText").textContent = t.liveStatusText;
@@ -1053,6 +1110,7 @@
       document.getElementById("middleEastBtn").textContent = t.middleEastBtn;
       document.getElementById("iranBtn").textContent = t.iranBtn;
       document.getElementById("refreshBtn").textContent = t.refreshBtn;
+      document.getElementById("fitBtn").textContent = t.fitBtn;
       document.getElementById("autoRefreshText").textContent = t.autoRefreshText;
       document.getElementById("langToggle").textContent = t.langButton;
       document.getElementById("searchInput").placeholder = t.searchPlaceholder;
@@ -1060,6 +1118,7 @@
       document.getElementById("toggleEventsText").textContent = t.toggleEventsText;
       document.getElementById("toggleNewsText").textContent = t.toggleNewsText;
       document.getElementById("toggleOnlyMilitaryText").textContent = t.toggleOnlyMilitaryText;
+      document.getElementById("toggleSatelliteText").textContent = t.toggleSatelliteText;
       document.getElementById("tabFeed").textContent = t.tabFeed;
       document.getElementById("tabSites").textContent = t.tabSites;
       document.getElementById("tabNews").textContent = t.tabNews;
@@ -1096,6 +1155,10 @@
       refreshData(true);
     });
 
+    document.getElementById("fitBtn").addEventListener("click", () => {
+      smartFit();
+    });
+
     document.getElementById("autoRefreshBtn").addEventListener("click", () => {
       autoRefreshEnabled = !autoRefreshEnabled;
       document.getElementById("autoRefreshBtn").classList.toggle("active", autoRefreshEnabled);
@@ -1129,6 +1192,17 @@
     document.getElementById("militaryOnlyToggle").addEventListener("change", (e) => {
       state.militaryOnly = e.target.checked;
       redrawAll();
+    });
+
+    document.getElementById("satelliteToggle").addEventListener("change", (e) => {
+      state.showSatellite = e.target.checked;
+      if(state.showSatellite){
+        map.addLayer(satelliteLayer);
+        showToast(translations[currentLang].satelliteOnText);
+      }else{
+        map.removeLayer(satelliteLayer);
+        showToast(translations[currentLang].satelliteOffText);
+      }
     });
 
     setupTabs();
