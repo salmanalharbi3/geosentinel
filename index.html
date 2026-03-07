@@ -13,35 +13,40 @@
 
   <style>
     :root{
-      --bg:#050b14;
-      --bg2:#08111d;
-      --panel:#0b1524;
-      --panel2:#102038;
-      --text:#eef4ff;
-      --muted:#93a8c8;
+      --bg:#030913;
+      --bg-soft:#081423;
+      --panel:#0c182a;
+      --panel-2:#12243b;
+      --panel-3:#162d4a;
+      --text:#edf4ff;
+      --muted:#99abc6;
       --line:rgba(255,255,255,.08);
+      --line-strong:rgba(83,168,255,.25);
       --accent:#53a8ff;
-      --accent2:#67ffd0;
-      --danger:#ff4d6d;
+      --accent-2:#67ffd0;
+      --danger:#ff5b7f;
       --warning:#ffc857;
+      --success:#53ffa8;
+      --shadow:0 14px 34px rgba(0,0,0,.30);
       --radius:18px;
-      --shadow:0 12px 28px rgba(0,0,0,.28);
     }
 
     *{box-sizing:border-box}
     html,body{height:100%;margin:0}
+
     body{
       font-family: Arial, sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(83,168,255,.13), transparent 24%),
-        radial-gradient(circle at top left, rgba(103,255,208,.08), transparent 20%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
       color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(83,168,255,.12), transparent 24%),
+        radial-gradient(circle at top left, rgba(103,255,208,.08), transparent 20%),
+        linear-gradient(180deg, #020811 0%, #06111d 100%);
+      overflow:hidden;
     }
 
     .app{
       display:grid;
-      grid-template-rows:72px 1fr;
+      grid-template-rows:74px 1fr;
       height:100vh;
     }
 
@@ -49,9 +54,9 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:14px;
+      gap:16px;
       padding:14px 18px;
-      background:rgba(5,11,20,.84);
+      background:rgba(3,9,19,.86);
       backdrop-filter: blur(12px);
       border-bottom:1px solid var(--line);
     }
@@ -67,21 +72,25 @@
       width:42px;
       height:42px;
       border-radius:14px;
-      background:linear-gradient(135deg, var(--accent), var(--accent2));
+      background:linear-gradient(135deg, var(--accent), var(--accent-2));
       box-shadow:var(--shadow);
       flex-shrink:0;
     }
 
-    .brand-text h1{
+    .brand-meta h1{
       margin:0;
       font-size:20px;
-      letter-spacing:.3px;
+      letter-spacing:.2px;
     }
 
-    .brand-text p{
+    .brand-meta p{
       margin:4px 0 0;
-      font-size:12px;
       color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:420px;
     }
 
     .actions{
@@ -104,7 +113,7 @@
 
     .btn:hover{
       transform:translateY(-1px);
-      border-color:rgba(83,168,255,.35);
+      border-color:var(--line-strong);
     }
 
     .btn.primary{
@@ -112,21 +121,26 @@
       border-color:rgba(83,168,255,.22);
     }
 
+    .btn.active{
+      border-color:rgba(83,168,255,.45);
+      box-shadow:0 0 0 1px rgba(83,168,255,.18) inset;
+    }
+
     .layout{
       display:grid;
-      grid-template-columns:380px 1fr;
+      grid-template-columns:390px 1fr;
       min-height:0;
     }
 
     .sidebar{
-      background:rgba(7,14,24,.56);
+      background:rgba(8,20,35,.56);
       border-left:1px solid var(--line);
       padding:16px;
       overflow:auto;
     }
 
     .panel{
-      background:linear-gradient(180deg, rgba(16,32,56,.96), rgba(11,21,36,.96));
+      background:linear-gradient(180deg, rgba(18,36,59,.95), rgba(12,24,42,.96));
       border:1px solid var(--line);
       border-radius:var(--radius);
       padding:16px;
@@ -170,22 +184,109 @@
       font-weight:700;
     }
 
-    .mode-grid{
-      display:grid;
+    .status-row{
+      display:flex;
       gap:10px;
+      flex-wrap:wrap;
       margin-top:12px;
     }
 
-    .mode-btn{
-      width:100%;
-      text-align:start;
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
     }
+
+    .live-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--danger);
+      box-shadow:0 0 12px var(--danger);
+      display:inline-block;
+    }
+
+    .toolbar-grid{
+      display:grid;
+      gap:10px;
+    }
+
+    .search-input{
+      width:100%;
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      outline:none;
+      font-size:14px;
+    }
+
+    .search-input:focus{
+      border-color:rgba(83,168,255,.35);
+      box-shadow:0 0 0 1px rgba(83,168,255,.18) inset;
+    }
+
+    .button-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+
+    .toggle-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:13px;
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .tab-btn{
+      padding:9px 12px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      cursor:pointer;
+      font-size:13px;
+    }
+
+    .tab-btn.active{
+      border-color:rgba(83,168,255,.45);
+      background:rgba(83,168,255,.08);
+    }
+
+    .tab-pane{display:none}
+    .tab-pane.active{display:block}
 
     .feed{
       display:flex;
       flex-direction:column;
       gap:10px;
-      margin-top:10px;
     }
 
     .feed-item{
@@ -200,7 +301,7 @@
       justify-content:space-between;
       gap:8px;
       font-size:12px;
-      color:var(--accent2);
+      color:var(--accent-2);
       margin-bottom:6px;
       flex-wrap:wrap;
     }
@@ -209,22 +310,41 @@
       font-size:14px;
       font-weight:700;
       margin-bottom:4px;
+      line-height:1.5;
     }
 
     .feed-item .desc{
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
+      margin-bottom:8px;
     }
 
-    .badge{
-      display:inline-block;
-      padding:5px 8px;
-      border-radius:999px;
-      font-size:11px;
-      border:1px solid var(--line);
+    .feed-item a{
+      color:var(--accent);
+      text-decoration:none;
+      font-size:13px;
+    }
+
+    .mini-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .mini-item{
       background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .mini-item strong{
       color:var(--text);
+      display:block;
+      margin-bottom:4px;
     }
 
     .map-wrap{
@@ -259,27 +379,65 @@
       box-shadow:var(--shadow);
     }
 
-    .live-dot{
-      display:inline-block;
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:var(--danger);
-      margin-inline-end:8px;
-      box-shadow:0 0 12px var(--danger);
+    .map-legend{
+      position:absolute;
+      bottom:16px;
+      left:16px;
+      z-index:999;
+      width:280px;
+      max-width:calc(100% - 32px);
+      background:rgba(10,20,35,.86);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      backdrop-filter: blur(10px);
+      box-shadow:var(--shadow);
+      font-size:13px;
     }
 
-    .status-row{
+    .legend-row{
       display:flex;
+      align-items:center;
       gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
+      color:var(--muted);
+      margin-top:8px;
     }
 
-    @media (max-width: 1024px){
+    .legend-dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      display:inline-block;
+    }
+
+    .toast{
+      position:absolute;
+      right:16px;
+      bottom:16px;
+      z-index:1000;
+      background:rgba(10,20,35,.90);
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      box-shadow:var(--shadow);
+      opacity:0;
+      transform:translateY(8px);
+      transition:.2s ease;
+      pointer-events:none;
+      max-width:320px;
+      font-size:13px;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    @media (max-width: 1040px){
       .layout{
         grid-template-columns:1fr;
-        grid-template-rows:1fr 360px;
+        grid-template-rows:1fr 390px;
       }
       .sidebar{
         border-left:none;
@@ -287,7 +445,7 @@
       }
     }
 
-    @media (max-width: 720px){
+    @media (max-width: 760px){
       .topbar{
         flex-direction:column;
         align-items:flex-start;
@@ -296,8 +454,17 @@
         width:100%;
         justify-content:flex-start;
       }
+      .button-grid{
+        grid-template-columns:1fr;
+      }
+      .toggle-grid{
+        grid-template-columns:1fr;
+      }
       .stats{
         grid-template-columns:1fr 1fr;
+      }
+      .brand-meta p{
+        max-width:100%;
       }
     }
   </style>
@@ -307,7 +474,7 @@
     <header class="topbar">
       <div class="brand">
         <div class="logo"></div>
-        <div class="brand-text">
+        <div class="brand-meta">
           <h1>GeoSentinel</h1>
           <p id="brandSubtitle">منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة</p>
         </div>
@@ -316,8 +483,9 @@
       <div class="actions">
         <button class="btn" id="langToggle">English</button>
         <button class="btn" id="refreshBtn">تحديث</button>
-        <button class="btn primary" id="liveModeBtn">
-          <span class="live-dot"></span><span id="liveModeText">وضع المتابعة</span>
+        <button class="btn primary active" id="autoRefreshBtn">
+          <span class="live-dot"></span>
+          <span id="autoRefreshText">تحديث تلقائي</span>
         </button>
       </div>
     </header>
@@ -327,7 +495,7 @@
         <section class="panel">
           <h2 id="overviewTitle">نظرة عامة</h2>
           <div class="muted" id="overviewText">
-            GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالفضاء الإقليمي والعالمي مع تركيز افتتاحي على الشرق الأوسط وإيران.
+            GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالأقاليم الحساسة مع تركيز افتتاحي على الشرق الأوسط وإيران.
           </div>
 
           <div class="stats">
@@ -343,22 +511,65 @@
 
           <div class="status-row">
             <span class="badge" id="focusBadge">التركيز: الشرق الأوسط</span>
-            <span class="badge" id="syncBadge">المصدر: ملفات JSON</span>
+            <span class="badge" id="syncBadge">المصدر: JSON</span>
+            <span class="badge"><span class="live-dot"></span><span id="liveStatusText">مراقبة فعّالة</span></span>
           </div>
         </section>
 
         <section class="panel">
-          <h3 id="modesTitle">أوضاع العرض</h3>
-          <div class="mode-grid">
-            <button class="btn mode-btn" id="globalBtn">العالم</button>
-            <button class="btn mode-btn primary" id="middleEastBtn">الشرق الأوسط</button>
-            <button class="btn mode-btn" id="iranBtn">Iran Focus</button>
+          <h3 id="controlsTitle">أدوات التحكم</h3>
+
+          <div class="toolbar-grid">
+            <input class="search-input" id="searchInput" type="text" placeholder="ابحث عن دولة أو موقع أو حدث" />
+
+            <div class="button-grid">
+              <button class="btn" id="globalBtn">العالم</button>
+              <button class="btn active" id="middleEastBtn">الشرق الأوسط</button>
+              <button class="btn" id="iranBtn">Iran Focus</button>
+            </div>
+
+            <div class="toggle-grid">
+              <label class="toggle">
+                <span id="toggleSitesText">إظهار المواقع</span>
+                <input type="checkbox" id="sitesToggle" checked />
+              </label>
+
+              <label class="toggle">
+                <span id="toggleEventsText">إظهار الأحداث</span>
+                <input type="checkbox" id="eventsToggle" checked />
+              </label>
+
+              <label class="toggle">
+                <span id="toggleNewsText">إظهار الأخبار</span>
+                <input type="checkbox" id="newsToggle" checked />
+              </label>
+
+              <label class="toggle">
+                <span id="toggleOnlyMilitaryText">عسكري فقط</span>
+                <input type="checkbox" id="militaryOnlyToggle" />
+              </label>
+            </div>
           </div>
         </section>
 
         <section class="panel">
-          <h3 id="feedTitle">آخر الأحداث</h3>
-          <div class="feed" id="feed"></div>
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="feed" id="tabFeed">الخلاصة</button>
+            <button class="tab-btn" data-tab="sites" id="tabSites">المواقع</button>
+            <button class="tab-btn" data-tab="news" id="tabNews">الأخبار</button>
+          </div>
+
+          <div class="tab-pane active" id="pane-feed">
+            <div class="feed" id="feed"></div>
+          </div>
+
+          <div class="tab-pane" id="pane-sites">
+            <div class="mini-list" id="sitesList"></div>
+          </div>
+
+          <div class="tab-pane" id="pane-news">
+            <div class="feed" id="newsFeed"></div>
+          </div>
         </section>
       </aside>
 
@@ -368,6 +579,16 @@
           <div class="chip" id="chip2">استخبارات مفتوحة</div>
           <div class="chip" id="chip3">التركيز: الشرق الأوسط</div>
         </div>
+
+        <div class="map-legend">
+          <strong id="legendTitle">دليل الرموز</strong>
+          <div class="legend-row"><span class="legend-dot" style="background:#53a8ff"></span><span id="legendSites">مواقع استراتيجية</span></div>
+          <div class="legend-row"><span class="legend-dot" style="background:#ff5b7f"></span><span id="legendMilitary">أحداث عسكرية</span></div>
+          <div class="legend-row"><span class="legend-dot" style="background:#ffc857"></span><span id="legendEnergy">أحداث طاقة</span></div>
+          <div class="legend-row"><span class="legend-dot" style="background:#67ffd0"></span><span id="legendOther">أخبار وتحولات عامة</span></div>
+        </div>
+
+        <div id="toast" class="toast"></div>
         <div id="map"></div>
       </main>
     </div>
@@ -384,15 +605,15 @@
         dir: "rtl",
         brandSubtitle: "منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة",
         overviewTitle: "نظرة عامة",
-        overviewText: "GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالفضاء الإقليمي والعالمي مع تركيز افتتاحي على الشرق الأوسط وإيران.",
+        overviewText: "GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالأقاليم الحساسة مع تركيز افتتاحي على الشرق الأوسط وإيران.",
         eventsLabel: "الأحداث",
         sitesLabel: "المواقع",
-        modesTitle: "أوضاع العرض",
-        feedTitle: "آخر الأحداث",
+        controlsTitle: "أدوات التحكم",
         focusGlobal: "التركيز: العالم",
         focusMiddleEast: "التركيز: الشرق الأوسط",
         focusIran: "التركيز: إيران",
-        syncText: "المصدر: ملفات JSON",
+        syncText: "المصدر: JSON",
+        liveStatusText: "مراقبة فعّالة",
         chip1: "خريطة تشغيلية",
         chip2: "استخبارات مفتوحة",
         chipGlobal: "التركيز: العالم",
@@ -402,26 +623,43 @@
         middleEastBtn: "الشرق الأوسط",
         iranBtn: "Iran Focus",
         refreshBtn: "تحديث",
-        liveModeText: "وضع المتابعة",
+        autoRefreshText: "تحديث تلقائي",
         langButton: "English",
-        siteTypeText: "النوع",
-        eventTypeText: "التصنيف",
+        searchPlaceholder: "ابحث عن دولة أو موقع أو حدث",
+        toggleSitesText: "إظهار المواقع",
+        toggleEventsText: "إظهار الأحداث",
+        toggleNewsText: "إظهار الأخبار",
+        toggleOnlyMilitaryText: "عسكري فقط",
+        tabFeed: "الخلاصة",
+        tabSites: "المواقع",
+        tabNews: "الأخبار",
+        legendTitle: "دليل الرموز",
+        legendSites: "مواقع استراتيجية",
+        legendMilitary: "أحداث عسكرية",
+        legendEnergy: "أحداث طاقة",
+        legendOther: "أخبار وتحولات عامة",
         countryText: "الدولة",
-        noEvents: "لا توجد أحداث معروضة في هذا النطاق حاليًا."
+        typeText: "التصنيف",
+        sourceText: "المصدر",
+        noFeed: "لا توجد عناصر معروضة حاليًا.",
+        openSourceText: "فتح المصدر",
+        refreshedText: "تم تحديث البيانات بنجاح.",
+        autoOnText: "تم تفعيل التحديث التلقائي.",
+        autoOffText: "تم إيقاف التحديث التلقائي."
       },
       en: {
         dir: "ltr",
         brandSubtitle: "Open-source intelligence, geopolitical analysis, and energy platform",
         overviewTitle: "Overview",
-        overviewText: "GeoSentinel is an early-stage platform for open-source intelligence mapping, geopolitical analysis, and event-centered regional and global monitoring, with an initial focus on the Middle East and Iran.",
+        overviewText: "GeoSentinel is an early-stage platform for open-source intelligence mapping, geopolitical analysis, and region-sensitive event tracking, with an initial focus on the Middle East and Iran.",
         eventsLabel: "Events",
         sitesLabel: "Sites",
-        modesTitle: "View modes",
-        feedTitle: "Latest events",
+        controlsTitle: "Controls",
         focusGlobal: "Focus: Global",
         focusMiddleEast: "Focus: Middle East",
         focusIran: "Focus: Iran",
-        syncText: "Source: JSON files",
+        syncText: "Source: JSON",
+        liveStatusText: "Monitoring active",
         chip1: "Operational map",
         chip2: "Open-source intelligence",
         chipGlobal: "Focus: Global",
@@ -431,19 +669,48 @@
         middleEastBtn: "Middle East",
         iranBtn: "Iran Focus",
         refreshBtn: "Refresh",
-        liveModeText: "Monitoring mode",
+        autoRefreshText: "Auto refresh",
         langButton: "العربية",
-        siteTypeText: "Type",
-        eventTypeText: "Category",
+        searchPlaceholder: "Search country, site, or event",
+        toggleSitesText: "Show sites",
+        toggleEventsText: "Show events",
+        toggleNewsText: "Show news",
+        toggleOnlyMilitaryText: "Military only",
+        tabFeed: "Feed",
+        tabSites: "Sites",
+        tabNews: "News",
+        legendTitle: "Legend",
+        legendSites: "Strategic sites",
+        legendMilitary: "Military events",
+        legendEnergy: "Energy events",
+        legendOther: "General news",
         countryText: "Country",
-        noEvents: "No events are currently displayed in this scope."
+        typeText: "Category",
+        sourceText: "Source",
+        noFeed: "No items are currently displayed.",
+        openSourceText: "Open source",
+        refreshedText: "Data refreshed successfully.",
+        autoOnText: "Auto refresh enabled.",
+        autoOffText: "Auto refresh disabled."
       }
     };
 
     let currentLang = "ar";
     let currentMode = "middle_east";
+    let autoRefreshEnabled = true;
+    let autoRefreshTimer = null;
+
     let events = [];
     let sites = [];
+    let news = [];
+
+    const state = {
+      search: "",
+      showSites: true,
+      showEvents: true,
+      showNews: true,
+      militaryOnly: false
+    };
 
     const map = L.map("map", { zoomControl: true }).setView([26, 45], 5);
 
@@ -454,10 +721,29 @@
     const eventsLayer = L.layerGroup().addTo(map);
     const sitesLayer = L.layerGroup().addTo(map);
 
-    const layersControl = L.control.layers(null, {
+    L.control.layers(null, {
       "Events / الأحداث": eventsLayer,
       "Sites / المواقع": sitesLayer
     }, { collapsed: false }).addTo(map);
+
+    function escapeHtml(value){
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showToast(message){
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2200);
+    }
 
     function getModeConfig(mode){
       const config = {
@@ -468,116 +754,251 @@
       return config[mode];
     }
 
-    function filterEventsByMode(data){
+    function applyModeFilter(items){
       if(currentMode === "iran"){
-        return data.filter(item => item.country === "Iran");
+        return items.filter(item => item.country === "Iran");
       }
       if(currentMode === "middle_east"){
-        return data.filter(item => MIDDLE_EAST_COUNTRIES.includes(item.country));
+        return items.filter(item => MIDDLE_EAST_COUNTRIES.includes(item.country));
       }
-      return data;
+      return items;
     }
 
-    function filterSitesByMode(data){
-      if(currentMode === "iran"){
-        return data.filter(item => item.country === "Iran");
-      }
-      if(currentMode === "middle_east"){
-        return data.filter(item => MIDDLE_EAST_COUNTRIES.includes(item.country));
-      }
-      return data;
-    }
+    function applySearchFilter(items){
+      const term = state.search.trim().toLowerCase();
+      if(!term) return items;
 
-    function renderFeed(){
-      const feed = document.getElementById("feed");
-      feed.innerHTML = "";
-
-      const filteredEvents = filterEventsByMode(events);
-
-      if(filteredEvents.length === 0){
-        feed.innerHTML = `<div class="feed-item"><div class="desc">${translations[currentLang].noEvents}</div></div>`;
-        return;
-      }
-
-      filteredEvents.slice(0, 8).forEach(event => {
-        const div = document.createElement("div");
-        div.className = "feed-item";
-        div.innerHTML = `
-          <div class="meta">
-            <span>${event.date || ""}</span>
-            <span>${event.country || ""}</span>
-          </div>
-          <div class="title">${event.title || "Untitled event"}</div>
-          <div class="desc">${event.type || ""}</div>
-        `;
-        feed.appendChild(div);
+      return items.filter(item => {
+        return Object.values(item).some(value =>
+          String(value).toLowerCase().includes(term)
+        );
       });
+    }
+
+    function applyMilitaryFilter(items){
+      if(!state.militaryOnly) return items;
+      return items.filter(item => String(item.type || item.category || "").toLowerCase().includes("military"));
+    }
+
+    function getFilteredEvents(){
+      return applyMilitaryFilter(applySearchFilter(applyModeFilter(events)));
+    }
+
+    function getFilteredSites(){
+      return applySearchFilter(applyModeFilter(sites));
+    }
+
+    function getFilteredNews(){
+      return applyMilitaryFilter(applySearchFilter(applyModeFilter(news)));
+    }
+
+    function getEventColor(type){
+      const t = String(type || "").toLowerCase();
+      if(t.includes("military")) return "#ff5b7f";
+      if(t.includes("energy")) return "#ffc857";
+      return "#67ffd0";
     }
 
     function drawSites(){
       sitesLayer.clearLayers();
-      const filteredSites = filterSitesByMode(sites);
+      const filteredSites = getFilteredSites();
 
-      filteredSites.forEach(site => {
-        L.marker(site.coords)
-          .bindPopup(`
-            <b>${site.name || "Site"}</b><br>
-            ${translations[currentLang].countryText}: ${site.country || "-"}<br>
-            ${translations[currentLang].siteTypeText}: ${site.type || "-"}
-          `)
-          .addTo(sitesLayer);
-      });
+      if(state.showSites){
+        filteredSites.forEach(site => {
+          const marker = L.circleMarker(site.coords, {
+            radius: 7,
+            weight: 2,
+            color: "#53a8ff",
+            fillColor: "#53a8ff",
+            fillOpacity: 0.8
+          });
+
+          marker.bindPopup(`
+            <b>${escapeHtml(site.name || "Site")}</b><br>
+            ${escapeHtml(translations[currentLang].countryText)}: ${escapeHtml(site.country || "-")}<br>
+            ${escapeHtml(translations[currentLang].typeText)}: ${escapeHtml(site.type || "-")}
+          `);
+
+          marker.addTo(sitesLayer);
+        });
+      }
 
       document.getElementById("sitesCount").textContent = filteredSites.length;
+      renderSitesList(filteredSites);
     }
 
     function drawEvents(){
       eventsLayer.clearLayers();
-      const filteredEvents = filterEventsByMode(events);
+      const filteredEvents = getFilteredEvents();
 
-      filteredEvents.forEach(event => {
-        L.circleMarker(event.coords, {
-          radius: 8,
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.8
-        })
-          .bindPopup(`
-            <b>${event.title || "Event"}</b><br>
-            ${translations[currentLang].countryText}: ${event.country || "-"}<br>
-            ${event.date || "-"}<br>
-            ${translations[currentLang].eventTypeText}: ${event.type || "-"}
-          `)
-          .addTo(eventsLayer);
-      });
+      if(state.showEvents){
+        filteredEvents.forEach(event => {
+          const color = getEventColor(event.type);
+
+          const marker = L.circleMarker(event.coords, {
+            radius: 8,
+            weight: 2,
+            color,
+            fillColor: color,
+            fillOpacity: 0.82
+          });
+
+          marker.bindPopup(`
+            <b>${escapeHtml(event.title || "Event")}</b><br>
+            ${escapeHtml(translations[currentLang].countryText)}: ${escapeHtml(event.country || "-")}<br>
+            ${escapeHtml(event.date || "-")}<br>
+            ${escapeHtml(translations[currentLang].typeText)}: ${escapeHtml(event.type || "-")}
+          `);
+
+          marker.addTo(eventsLayer);
+        });
+      }
 
       document.getElementById("eventsCount").textContent = filteredEvents.length;
-      renderFeed();
+      renderFeed(filteredEvents);
+    }
+
+    function renderFeed(filteredEvents = getFilteredEvents()){
+      const container = document.getElementById("feed");
+      container.innerHTML = "";
+
+      const items = [];
+
+      if(state.showEvents){
+        filteredEvents.slice(0, 6).forEach(item => {
+          items.push({
+            metaLeft: item.date || "",
+            metaRight: item.country || "",
+            title: item.title || "Untitled event",
+            desc: item.type || "",
+            link: ""
+          });
+        });
+      }
+
+      if(state.showNews){
+        getFilteredNews().slice(0, 4).forEach(item => {
+          items.push({
+            metaLeft: item.source || "",
+            metaRight: item.date || "",
+            title: item.title || "Untitled news",
+            desc: `${item.country || ""} — ${item.category || ""}`,
+            link: item.url || ""
+          });
+        });
+      }
+
+      if(items.length === 0){
+        container.innerHTML = `<div class="feed-item"><div class="desc">${escapeHtml(translations[currentLang].noFeed)}</div></div>`;
+        return;
+      }
+
+      items.slice(0, 10).forEach(item => {
+        const div = document.createElement("div");
+        div.className = "feed-item";
+        div.innerHTML = `
+          <div class="meta">
+            <span>${escapeHtml(item.metaLeft)}</span>
+            <span>${escapeHtml(item.metaRight)}</span>
+          </div>
+          <div class="title">${escapeHtml(item.title)}</div>
+          <div class="desc">${escapeHtml(item.desc)}</div>
+          ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(translations[currentLang].openSourceText)}</a>` : ""}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderSitesList(filteredSites = getFilteredSites()){
+      const container = document.getElementById("sitesList");
+      container.innerHTML = "";
+
+      if(filteredSites.length === 0){
+        container.innerHTML = `<div class="mini-item">${escapeHtml(translations[currentLang].noFeed)}</div>`;
+        return;
+      }
+
+      filteredSites.slice(0, 12).forEach(site => {
+        const div = document.createElement("div");
+        div.className = "mini-item";
+        div.innerHTML = `
+          <strong>${escapeHtml(site.name || "Site")}</strong>
+          ${escapeHtml(site.country || "-")} — ${escapeHtml(site.type || "-")}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderNewsFeed(filteredNews = getFilteredNews()){
+      const container = document.getElementById("newsFeed");
+      container.innerHTML = "";
+
+      if(!state.showNews || filteredNews.length === 0){
+        container.innerHTML = `<div class="feed-item"><div class="desc">${escapeHtml(translations[currentLang].noFeed)}</div></div>`;
+        return;
+      }
+
+      filteredNews.slice(0, 12).forEach(item => {
+        const div = document.createElement("div");
+        div.className = "feed-item";
+        div.innerHTML = `
+          <div class="meta">
+            <span>${escapeHtml(item.source || "")}</span>
+            <span>${escapeHtml(item.date || "")}</span>
+          </div>
+          <div class="title">${escapeHtml(item.title || "Untitled news")}</div>
+          <div class="desc">${escapeHtml(item.country || "")} — ${escapeHtml(item.category || "")}</div>
+          ${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(translations[currentLang].openSourceText)}</a>` : ""}
+        `;
+        container.appendChild(div);
+      });
     }
 
     function redrawAll(){
       drawSites();
       drawEvents();
+      renderNewsFeed();
     }
 
     async function loadEvents(){
-      const response = await fetch("data/events.json");
+      const response = await fetch(`data/events.json?v=${Date.now()}`);
       if(!response.ok) throw new Error("Failed to load events.json");
       events = await response.json();
     }
 
     async function loadSites(){
-      const response = await fetch("data/sites.json");
+      const response = await fetch(`data/sites.json?v=${Date.now()}`);
       if(!response.ok) throw new Error("Failed to load sites.json");
       sites = await response.json();
     }
 
-    async function refreshData(){
+    async function loadNews(){
+      const response = await fetch(`data/news.json?v=${Date.now()}`);
+      if(!response.ok) throw new Error("Failed to load news.json");
+      news = await response.json();
+    }
+
+    async function refreshData(showMessage = true){
       try{
-        await Promise.all([loadEvents(), loadSites()]);
+        await Promise.all([loadEvents(), loadSites(), loadNews()]);
         redrawAll();
+        if(showMessage) showToast(translations[currentLang].refreshedText);
       }catch(error){
         console.error(error);
+      }
+    }
+
+    function startAutoRefresh(){
+      stopAutoRefresh();
+      autoRefreshTimer = setInterval(() => {
+        if(autoRefreshEnabled) refreshData(false);
+      }, 60000);
+    }
+
+    function stopAutoRefresh(){
+      if(autoRefreshTimer){
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
       }
     }
 
@@ -596,11 +1017,18 @@
       }
     }
 
+    function updateModeButtons(){
+      document.getElementById("globalBtn").classList.toggle("active", currentMode === "global");
+      document.getElementById("middleEastBtn").classList.toggle("active", currentMode === "middle_east");
+      document.getElementById("iranBtn").classList.toggle("active", currentMode === "iran");
+    }
+
     function setViewMode(mode){
       currentMode = mode;
       const cfg = getModeConfig(mode);
       map.setView(cfg.center, cfg.zoom);
       updateModeTexts();
+      updateModeButtons();
       redrawAll();
     }
 
@@ -616,34 +1044,98 @@
       document.getElementById("overviewText").textContent = t.overviewText;
       document.getElementById("eventsLabel").textContent = t.eventsLabel;
       document.getElementById("sitesLabel").textContent = t.sitesLabel;
-      document.getElementById("modesTitle").textContent = t.modesTitle;
-      document.getElementById("feedTitle").textContent = t.feedTitle;
+      document.getElementById("controlsTitle").textContent = t.controlsTitle;
       document.getElementById("syncBadge").textContent = t.syncText;
+      document.getElementById("liveStatusText").textContent = t.liveStatusText;
       document.getElementById("chip1").textContent = t.chip1;
       document.getElementById("chip2").textContent = t.chip2;
       document.getElementById("globalBtn").textContent = t.globalBtn;
       document.getElementById("middleEastBtn").textContent = t.middleEastBtn;
       document.getElementById("iranBtn").textContent = t.iranBtn;
       document.getElementById("refreshBtn").textContent = t.refreshBtn;
-      document.getElementById("liveModeText").textContent = t.liveModeText;
+      document.getElementById("autoRefreshText").textContent = t.autoRefreshText;
       document.getElementById("langToggle").textContent = t.langButton;
+      document.getElementById("searchInput").placeholder = t.searchPlaceholder;
+      document.getElementById("toggleSitesText").textContent = t.toggleSitesText;
+      document.getElementById("toggleEventsText").textContent = t.toggleEventsText;
+      document.getElementById("toggleNewsText").textContent = t.toggleNewsText;
+      document.getElementById("toggleOnlyMilitaryText").textContent = t.toggleOnlyMilitaryText;
+      document.getElementById("tabFeed").textContent = t.tabFeed;
+      document.getElementById("tabSites").textContent = t.tabSites;
+      document.getElementById("tabNews").textContent = t.tabNews;
+      document.getElementById("legendTitle").textContent = t.legendTitle;
+      document.getElementById("legendSites").textContent = t.legendSites;
+      document.getElementById("legendMilitary").textContent = t.legendMilitary;
+      document.getElementById("legendEnergy").textContent = t.legendEnergy;
+      document.getElementById("legendOther").textContent = t.legendOther;
 
       updateModeTexts();
       redrawAll();
+    }
+
+    function setupTabs(){
+      const buttons = document.querySelectorAll(".tab-btn");
+      const panes = document.querySelectorAll(".tab-pane");
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tab = btn.dataset.tab;
+          buttons.forEach(b => b.classList.remove("active"));
+          panes.forEach(p => p.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(`pane-${tab}`).classList.add("active");
+        });
+      });
     }
 
     document.getElementById("langToggle").addEventListener("click", () => {
       setLanguage(currentLang === "ar" ? "en" : "ar");
     });
 
-    document.getElementById("refreshBtn").addEventListener("click", refreshData);
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      refreshData(true);
+    });
+
+    document.getElementById("autoRefreshBtn").addEventListener("click", () => {
+      autoRefreshEnabled = !autoRefreshEnabled;
+      document.getElementById("autoRefreshBtn").classList.toggle("active", autoRefreshEnabled);
+      showToast(autoRefreshEnabled ? translations[currentLang].autoOnText : translations[currentLang].autoOffText);
+    });
+
     document.getElementById("globalBtn").addEventListener("click", () => setViewMode("global"));
     document.getElementById("middleEastBtn").addEventListener("click", () => setViewMode("middle_east"));
     document.getElementById("iranBtn").addEventListener("click", () => setViewMode("iran"));
 
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      state.search = e.target.value;
+      redrawAll();
+    });
+
+    document.getElementById("sitesToggle").addEventListener("change", (e) => {
+      state.showSites = e.target.checked;
+      redrawAll();
+    });
+
+    document.getElementById("eventsToggle").addEventListener("change", (e) => {
+      state.showEvents = e.target.checked;
+      redrawAll();
+    });
+
+    document.getElementById("newsToggle").addEventListener("change", (e) => {
+      state.showNews = e.target.checked;
+      redrawAll();
+    });
+
+    document.getElementById("militaryOnlyToggle").addEventListener("change", (e) => {
+      state.militaryOnly = e.target.checked;
+      redrawAll();
+    });
+
+    setupTabs();
     setLanguage("ar");
     setViewMode("middle_east");
-    refreshData();
+    refreshData(false);
+    startAutoRefresh();
   </script>
 </body>
 </html>
