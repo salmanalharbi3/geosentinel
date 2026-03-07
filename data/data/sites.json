@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Riyadh Strategic Area",
+    "country": "Saudi Arabia",
+    "coords": [24.7136, 46.6753],
+    "type": "strategic"
+  },
+  {
+    "name": "Strait of Hormuz",
+    "country": "Iran",
+    "coords": [26.5, 56.2],
+    "type": "chokepoint"
+  },
+  {
+    "name": "Bab al-Mandab",
+    "country": "Yemen",
+    "coords": [12.6, 43.3],
+    "type": "chokepoint"
+  }
+]
