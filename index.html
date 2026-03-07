@@ -14,8 +14,8 @@
   <style>
     :root{
       --bg:#020811;
-      --bg-soft:#081322;
-      --panel:#0d1a2d;
+      --bg-soft:#071424;
+      --panel:#0c1a2d;
       --panel-2:#13243d;
       --panel-3:#183152;
       --text:#eef5ff;
@@ -29,6 +29,7 @@
       --success:#4dffab;
       --shadow:0 14px 34px rgba(0,0,0,.32);
       --radius:18px;
+      --sidebar-width:420px;
     }
 
     *{box-sizing:border-box}
@@ -59,6 +60,8 @@
       background:rgba(2,8,17,.88);
       backdrop-filter: blur(12px);
       border-bottom:1px solid var(--line);
+      position:relative;
+      z-index:1100;
     }
 
     .brand{
@@ -90,7 +93,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width:460px;
+      max-width:520px;
     }
 
     .actions{
@@ -98,6 +101,7 @@
       gap:10px;
       flex-wrap:wrap;
       justify-content:flex-end;
+      align-items:center;
     }
 
     .btn{
@@ -126,9 +130,11 @@
       box-shadow:0 0 0 1px rgba(83,168,255,.18) inset;
     }
 
+    .mobile-only{display:none}
+
     .layout{
       display:grid;
-      grid-template-columns:400px 1fr;
+      grid-template-columns:var(--sidebar-width) 1fr;
       min-height:0;
     }
 
@@ -384,7 +390,7 @@
       bottom:16px;
       left:16px;
       z-index:999;
-      width:290px;
+      width:300px;
       max-width:calc(100% - 32px);
       background:rgba(10,20,35,.88);
       border:1px solid var(--line);
@@ -434,15 +440,50 @@
       transform:translateY(0);
     }
 
+    .drawer-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:1090;
+      opacity:0;
+      pointer-events:none;
+      transition:.18s ease;
+    }
+
+    .drawer-backdrop.show{
+      opacity:1;
+      pointer-events:auto;
+    }
+
     @media (max-width: 1100px){
       .layout{
         grid-template-columns:1fr;
-        grid-template-rows:1fr 420px;
       }
+
       .sidebar{
-        border-left:none;
-        border-top:1px solid var(--line);
+        position:fixed;
+        top:74px;
+        bottom:0;
+        right:0;
+        width:min(92vw, 420px);
+        z-index:1095;
+        transform:translateX(100%);
+        transition:.22s ease;
+        border-left:1px solid var(--line);
+        border-top:none;
       }
+
+      html[dir="ltr"] .sidebar{
+        right:auto;
+        left:0;
+        transform:translateX(-100%);
+      }
+
+      .sidebar.open{
+        transform:translateX(0);
+      }
+
+      .mobile-only{display:inline-flex}
     }
 
     @media (max-width: 760px){
@@ -470,6 +511,8 @@
   </style>
 </head>
 <body>
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
   <div class="app">
     <header class="topbar">
       <div class="brand">
@@ -481,6 +524,7 @@
       </div>
 
       <div class="actions">
+        <button class="btn mobile-only" id="menuBtn">☰</button>
         <button class="btn" id="langToggle">English</button>
         <button class="btn" id="refreshBtn">تحديث</button>
         <button class="btn" id="fitBtn">تركيز ذكي</button>
@@ -492,7 +536,7 @@
     </header>
 
     <div class="layout">
-      <aside class="sidebar">
+      <aside class="sidebar" id="sidebar">
         <section class="panel">
           <h2 id="overviewTitle">نظرة عامة</h2>
           <div class="muted" id="overviewText">
@@ -516,7 +560,7 @@
 
           <div class="status-row">
             <span class="badge" id="focusBadge">التركيز: الشرق الأوسط</span>
-            <span class="badge" id="syncBadge">المصدر: JSON</span>
+            <span class="badge" id="syncBadge">المصدر: JSON/API</span>
             <span class="badge"><span class="live-dot"></span><span id="liveStatusText">مراقبة فعّالة</span></span>
           </div>
         </section>
@@ -623,7 +667,7 @@
         focusGlobal: "التركيز: العالم",
         focusMiddleEast: "التركيز: الشرق الأوسط",
         focusIran: "التركيز: إيران",
-        syncText: "المصدر: JSON",
+        syncText: "المصدر: JSON/API",
         liveStatusText: "مراقبة فعّالة",
         chip1: "خريطة تشغيلية",
         chip2: "استخبارات مفتوحة",
@@ -637,6 +681,7 @@
         fitBtn: "تركيز ذكي",
         autoRefreshText: "تحديث تلقائي",
         langButton: "English",
+        menuBtn: "القائمة",
         searchPlaceholder: "ابحث عن دولة أو موقع أو حدث",
         toggleSitesText: "إظهار المواقع",
         toggleEventsText: "إظهار الأحداث",
@@ -653,14 +698,14 @@
         legendOther: "أخبار وتحولات عامة",
         countryText: "الدولة",
         typeText: "التصنيف",
-        sourceText: "المصدر",
         noFeed: "لا توجد عناصر معروضة حاليًا.",
         openSourceText: "فتح المصدر",
         refreshedText: "تم تحديث البيانات بنجاح.",
         autoOnText: "تم تفعيل التحديث التلقائي.",
         autoOffText: "تم إيقاف التحديث التلقائي.",
         satelliteOnText: "تم تفعيل الطبقة الفضائية.",
-        satelliteOffText: "تم إخفاء الطبقة الفضائية."
+        satelliteOffText: "تم إخفاء الطبقة الفضائية.",
+        apiFallbackText: "تم استخدام المصدر الاحتياطي للأخبار."
       },
       en: {
         dir: "ltr",
@@ -674,7 +719,7 @@
         focusGlobal: "Focus: Global",
         focusMiddleEast: "Focus: Middle East",
         focusIran: "Focus: Iran",
-        syncText: "Source: JSON",
+        syncText: "Source: JSON/API",
         liveStatusText: "Monitoring active",
         chip1: "Operational map",
         chip2: "Open-source intelligence",
@@ -688,6 +733,7 @@
         fitBtn: "Smart focus",
         autoRefreshText: "Auto refresh",
         langButton: "العربية",
+        menuBtn: "Menu",
         searchPlaceholder: "Search country, site, or event",
         toggleSitesText: "Show sites",
         toggleEventsText: "Show events",
@@ -704,14 +750,14 @@
         legendOther: "General news",
         countryText: "Country",
         typeText: "Category",
-        sourceText: "Source",
         noFeed: "No items are currently displayed.",
         openSourceText: "Open source",
         refreshedText: "Data refreshed successfully.",
         autoOnText: "Auto refresh enabled.",
         autoOffText: "Auto refresh disabled.",
         satelliteOnText: "Satellite layer enabled.",
-        satelliteOffText: "Satellite layer hidden."
+        satelliteOffText: "Satellite layer hidden.",
+        apiFallbackText: "Fallback news source in use."
       }
     };
 
@@ -735,16 +781,13 @@
 
     const map = L.map("map", { zoomControl: true }).setView([26, 45], 5);
 
-    const baseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
 
-    // طبقة فضائية/تصويرية عامة اختيارية
     const satelliteLayer = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      {
-        attribution: "Tiles &copy; Esri"
-      }
+      { attribution: "Tiles &copy; Esri" }
     );
 
     const eventsLayer = L.layerGroup().addTo(map);
@@ -772,7 +815,7 @@
       clearTimeout(showToast._timer);
       showToast._timer = setTimeout(() => {
         toast.classList.remove("show");
-      }, 2200);
+      }, 2400);
     }
 
     function getModeConfig(mode){
@@ -797,7 +840,6 @@
     function applySearchFilter(items){
       const term = state.search.trim().toLowerCase();
       if(!term) return items;
-
       return items.filter(item => {
         return Object.values(item).some(value =>
           String(value).toLowerCase().includes(term)
@@ -900,6 +942,8 @@
       if(state.showEvents){
         filteredEvents.slice(0, 6).forEach(item => {
           items.push({
+            kind: "event",
+            sortKey: item.date || "",
             metaLeft: item.date || "",
             metaRight: item.country || "",
             title: item.title || "Untitled event",
@@ -910,8 +954,10 @@
       }
 
       if(state.showNews){
-        getFilteredNews().slice(0, 4).forEach(item => {
+        getFilteredNews().slice(0, 6).forEach(item => {
           items.push({
+            kind: "news",
+            sortKey: item.date || "",
             metaLeft: item.source || "",
             metaRight: item.date || "",
             title: item.title || "Untitled news",
@@ -920,6 +966,8 @@
           });
         });
       }
+
+      items.sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey)));
 
       if(items.length === 0){
         container.innerHTML = `<div class="feed-item"><div class="desc">${escapeHtml(translations[currentLang].noFeed)}</div></div>`;
@@ -965,7 +1013,6 @@
     function renderNewsFeed(filteredNews = getFilteredNews()){
       const container = document.getElementById("newsFeed");
       container.innerHTML = "";
-
       document.getElementById("newsCount").textContent = filteredNews.length;
 
       if(!state.showNews || filteredNews.length === 0){
@@ -1011,9 +1058,7 @@
       }
 
       if(points.length === 0) return;
-
-      const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [40, 40] });
+      map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
     }
 
     async function loadEvents(){
@@ -1029,9 +1074,20 @@
     }
 
     async function loadNews(){
-      const response = await fetch(`data/news.json?v=${Date.now()}`);
-      if(!response.ok) throw new Error("Failed to load news.json");
-      news = await response.json();
+      try{
+        const apiResponse = await fetch(`/api/news?v=${Date.now()}`);
+        if(apiResponse.ok){
+          news = await apiResponse.json();
+          return;
+        }
+      }catch(error){
+        console.error("API news failed, falling back.", error);
+      }
+
+      const fallbackResponse = await fetch(`data/news.json?v=${Date.now()}`);
+      if(!fallbackResponse.ok) throw new Error("Failed to load fallback news.json");
+      news = await fallbackResponse.json();
+      showToast(translations[currentLang].apiFallbackText);
     }
 
     async function refreshData(showMessage = true){
@@ -1113,6 +1169,7 @@
       document.getElementById("fitBtn").textContent = t.fitBtn;
       document.getElementById("autoRefreshText").textContent = t.autoRefreshText;
       document.getElementById("langToggle").textContent = t.langButton;
+      document.getElementById("menuBtn").textContent = "☰";
       document.getElementById("searchInput").placeholder = t.searchPlaceholder;
       document.getElementById("toggleSitesText").textContent = t.toggleSitesText;
       document.getElementById("toggleEventsText").textContent = t.toggleEventsText;
@@ -1146,6 +1203,19 @@
         });
       });
     }
+
+    function openSidebar(){
+      document.getElementById("sidebar").classList.add("open");
+      document.getElementById("drawerBackdrop").classList.add("show");
+    }
+
+    function closeSidebar(){
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("drawerBackdrop").classList.remove("show");
+    }
+
+    document.getElementById("menuBtn").addEventListener("click", openSidebar);
+    document.getElementById("drawerBackdrop").addEventListener("click", closeSidebar);
 
     document.getElementById("langToggle").addEventListener("click", () => {
       setLanguage(currentLang === "ar" ? "en" : "ar");
