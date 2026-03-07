@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Iran conducts naval exercise in Gulf waters",
+    "source": "Reuters",
+    "country": "Iran",
+    "date": "2026-03-08",
+    "url": "https://www.reuters.com",
+    "category": "military"
+  },
+  {
+    "title": "Oil tanker traffic increases near Strait of Hormuz",
+    "source": "Bloomberg",
+    "country": "Oman",
+    "date": "2026-03-08",
+    "url": "https://www.bloomberg.com",
+    "category": "energy"
+  },
+  {
+    "title": "Missile defense systems activated in region",
+    "source": "Al Jazeera",
+    "country": "Saudi Arabia",
+    "date": "2026-03-07",
+    "url": "https://www.aljazeera.com",
+    "category": "military"
+  }
+]
