@@ -1,3 +1,9 @@
+/**
+ * worker.js - GeoSentinel Cloudflare Worker
+ * يقدم الصفحة الرئيسية index.html + ملفات JSON الثابتة + APIs بسيطة
+ * تم تطويره ليعمل مع هيكل المشروع الحالي (data/ + functions/api/)
+ */
+
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request));
 });
@@ -10,67 +16,100 @@ async function handleRequest(request) {
   if (path === '/' || path === '') path = '/index.html';
   if (path.startsWith('/')) path = path.slice(1);
 
-  const repo = 'YOUR_USERNAME/YOUR_REPO'; // ← غيّر هنا باسم حسابك واسم الـ repo
-  // مثال: 'sadfg2369/geosentinel-repo'
+  // === بيانات حساب GitHub الخاص بك ===
+  // غيّر هذه القيم مرة واحدة فقط حسب حسابك
+  const GITHUB_USERNAME = 'sadfg2369';       // اسم حسابك على GitHub
+  const REPO_NAME       = 'geosentinel';     // اسم الـ repository بالضبط (شوف الرابط في GitHub)
 
-  // تقديم index.html
+  const BASE_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${REPO_NAME}/main`;
+
+  // 1. تقديم الصفحة الرئيسية (index.html)
   if (path === 'index.html') {
-    const htmlUrl = `https://raw.githubusercontent.com/${repo}/main/index.html`;
-    const html = await fetch(htmlUrl).then(r => r.text());
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html;charset=UTF-8' }
-    });
-  }
-
-  // تقديم ملفات JSON من مجلد data
-  if (path.startsWith('data/')) {
-    const file = path.replace('data/', '');
-    const jsonUrl = `https://raw.githubusercontent.com/${repo}/main/data/${file}`;
+    const htmlUrl = `${BASE_RAW_URL}/index.html`;
     try {
-      const json = await fetch(jsonUrl).then(r => {
-        if (!r.ok) throw new Error('File not found');
+      const html = await fetch(htmlUrl).then(r => {
+        if (!r.ok) throw new Error('index.html not found');
         return r.text();
       });
-      return new Response(json, {
-        headers: { 'Content-Type': 'application/json' }
+      return new Response(html, {
+        headers: { 'Content-Type': 'text/html;charset=UTF-8' }
       });
     } catch (e) {
-      return new Response(JSON.stringify({ error: 'File not found' }), { status: 404 });
+      return new Response(
+        `<h1>خطأ في تحميل الصفحة</h1><p>${e.message}</p><p>تأكد من وجود index.html في الـ repo</p>`,
+        { status: 500, headers: { 'Content-Type': 'text/html' } }
+      );
     }
   }
 
-  // تقديم API داخل functions/api
-  if (path.startsWith('api/')) {
-    const apiFile = path.replace('api/', '');
-    const apiUrl = `https://raw.githubusercontent.com/${repo}/main/functions/api/${apiFile}`;
+  // 2. تقديم أي ملف JSON داخل مجلد data (events.json, sites.json, news.json)
+  if (path.startsWith('data/')) {
+    const fileName = path.replace('data/', '');
+    const fileUrl = `${BASE_RAW_URL}/data/${fileName}`;
     try {
-      const apiCode = await fetch(apiUrl).then(r => r.text());
-      // هنا نحتاج تنفيذ الكود ديناميكيًا (غير آمن في Workers مباشرة)
-      // لذلك نستخدم حل بديل مؤقت: نعيد نتيجة ثابتة أو ندمج المنطق يدويًا
-      if (apiFile === 'news.js') {
-        // استدعاء منطق news.js مباشرة (نسخ المنطق هنا)
-        const feeds = [
-          { url: "https://news.google.com/rss/search?q=Middle+East+OR+Iran+OR+Gulf+energy+when:1d&hl=en-US&gl=US&ceid=US:en", source: "Google News" }
-        ];
-        // ... (يمكن نسخ باقي الكود من news.js هنا لاحقًا)
-        return new Response(JSON.stringify([{ title: "News loading...", source: "Temp" }]), {
-          headers: { 'Content-Type': 'application/json' }
+      const content = await fetch(fileUrl).then(r => {
+        if (!r.ok) throw new Error(`${fileName} غير موجود`);
+        return r.text();
+      });
+      return new Response(content, {
+        headers: {
+          'Content-Type': 'application/json;charset=UTF-8',
+          'Cache-Control': 'no-cache'
+        }
+      });
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ error: `الملف غير موجود: ${fileName}` }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+
+  // 3. تقديم API داخل functions/api (energy.js و news.js حاليًا)
+  if (path.startsWith('api/')) {
+    const apiName = path.replace('api/', '');
+
+    // API للأخبار (news.js) - حاليًا نعطي رد بسيط، يمكن توسيعه لاحقًا
+    if (apiName === 'news') {
+      const newsUrl = `${BASE_RAW_URL}/data/news.json`;
+      try {
+        const news = await fetch(newsUrl).then(r => r.json());
+        return new Response(JSON.stringify(news), {
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' }
         });
+      } catch (e) {
+        return new Response(
+          JSON.stringify([{ title: "خطأ في جلب الأخبار", source: "Fallback" }]),
+          { headers: { 'Content-Type': 'application/json' } }
+        );
       }
-      if (apiFile === 'energy.js') {
-        // استدعاء منطق energy.js مباشرة
-        return new Response(JSON.stringify({
+    }
+
+    // API لأسعار الطاقة (energy.js) - حاليًا رد ثابت، يمكن استبداله بـ API حقيقي لاحقًا
+    if (apiName === 'energy') {
+      return new Response(
+        JSON.stringify({
+          updated_at: new Date().toISOString(),
           brent_usd: 92.69,
           wti_usd: 90.90,
-          updated_at: new Date().toISOString()
-        }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-    } catch (e) {
-      return new Response(JSON.stringify({ error: 'API not found' }), { status: 404 });
+          source: "Static fallback - سيتم استبداله بـ API حي قريبًا"
+        }),
+        {
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+        }
+      );
     }
+
+    // أي API أخرى غير مدعومة
+    return new Response(
+      JSON.stringify({ error: `API غير مدعوم: ${apiName}` }),
+      { status: 501, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
-  return new Response('Not Found', { status: 404 });
+  // أي مسار آخر → 404
+  return new Response(
+    'الصفحة غير موجودة (404)',
+    { status: 404, headers: { 'Content-Type': 'text/plain;charset=UTF-8' } }
+  );
 }
