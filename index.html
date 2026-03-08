@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GeoSentinel</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
@@ -1005,11 +1002,9 @@
     function applySearchFilter(items){
       const term = state.search.trim().toLowerCase();
       if(!term) return items;
-      return items.filter(item => {
-        return Object.values(item).some(value =>
-          String(value).toLowerCase().includes(term)
-        );
-      });
+      return items.filter(item =>
+        Object.values(item).some(value => String(value).toLowerCase().includes(term))
+      );
     }
 
     function applyMilitaryFilter(items){
@@ -1074,7 +1069,6 @@
       if(state.showEvents){
         filteredEvents.forEach(event => {
           const color = getEventColor(event.type);
-
           const marker = L.circleMarker(event.coords, {
             radius: 8,
             weight: 2,
@@ -1108,7 +1102,6 @@
       if(state.showEvents){
         filteredEvents.slice(0, 6).forEach(item => {
           items.push({
-            kind: "event",
             sortKey: item.date || "",
             metaLeft: item.date || "",
             metaRight: item.country || "",
@@ -1122,7 +1115,6 @@
       if(state.showNews){
         getFilteredNews().slice(0, 6).forEach(item => {
           items.push({
-            kind: "news",
             sortKey: item.date || "",
             metaLeft: item.source || "",
             metaRight: item.date || "",
@@ -1445,6 +1437,7 @@
 
     function toggleSidebarCollapse(){
       document.getElementById("layout").classList.toggle("sidebar-collapsed");
+      setTimeout(() => map.invalidateSize(), 220);
     }
 
     function toggleFullscreenMode(){
