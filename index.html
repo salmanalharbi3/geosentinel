@@ -21,7 +21,7 @@
       --text:#eef5ff;
       --muted:#9cb0cd;
       --line:rgba(255,255,255,.08);
-      --line-strong:rgba(83,168,255,.28);
+      --line-strong:rgba(83,168,255,.30);
       --accent:#53a8ff;
       --accent-2:#67ffd0;
       --danger:#ff5b7f;
@@ -29,7 +29,7 @@
       --success:#4dffab;
       --shadow:0 14px 34px rgba(0,0,0,.32);
       --radius:18px;
-      --sidebar-width:420px;
+      --sidebar-width:430px;
     }
 
     *{box-sizing:border-box}
@@ -61,7 +61,7 @@
       backdrop-filter: blur(12px);
       border-bottom:1px solid var(--line);
       position:relative;
-      z-index:1100;
+      z-index:1200;
     }
 
     .brand{
@@ -93,7 +93,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width:520px;
+      max-width:560px;
     }
 
     .actions{
@@ -126,7 +126,7 @@
     }
 
     .btn.active{
-      border-color:rgba(83,168,255,.45);
+      border-color:rgba(83,168,255,.48);
       box-shadow:0 0 0 1px rgba(83,168,255,.18) inset;
     }
 
@@ -136,6 +136,11 @@
       display:grid;
       grid-template-columns:var(--sidebar-width) 1fr;
       min-height:0;
+      transition:.2s ease;
+    }
+
+    .layout.sidebar-collapsed{
+      grid-template-columns:0 1fr;
     }
 
     .sidebar{
@@ -143,6 +148,14 @@
       border-left:1px solid var(--line);
       padding:16px;
       overflow:auto;
+      min-width:0;
+      transition:.2s ease;
+    }
+
+    .layout.sidebar-collapsed .sidebar{
+      padding:0;
+      border-left:none;
+      overflow:hidden;
     }
 
     .panel{
@@ -264,6 +277,28 @@
       font-size:13px;
     }
 
+    .quick-filters{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .quick-chip{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      border-radius:999px;
+      padding:8px 12px;
+      cursor:pointer;
+      font-size:12px;
+    }
+
+    .quick-chip.active{
+      border-color:rgba(83,168,255,.48);
+      background:rgba(83,168,255,.10);
+    }
+
     .tabs{
       display:flex;
       gap:8px;
@@ -353,6 +388,28 @@
       margin-bottom:4px;
     }
 
+    .timeline{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .timeline-item{
+      border-right:2px solid rgba(83,168,255,.35);
+      padding:8px 12px;
+      background:rgba(255,255,255,.03);
+      border-radius:12px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .timeline-item strong{
+      display:block;
+      color:var(--text);
+      margin-bottom:4px;
+    }
+
     .map-wrap{
       position:relative;
       min-height:0;
@@ -390,7 +447,7 @@
       bottom:16px;
       left:16px;
       z-index:999;
-      width:300px;
+      width:310px;
       max-width:calc(100% - 32px);
       background:rgba(10,20,35,.88);
       border:1px solid var(--line);
@@ -465,7 +522,7 @@
         top:74px;
         bottom:0;
         right:0;
-        width:min(92vw, 420px);
+        width:min(92vw, 430px);
         z-index:1095;
         transform:translateX(100%);
         transition:.22s ease;
@@ -484,6 +541,9 @@
       }
 
       .mobile-only{display:inline-flex}
+      .layout.sidebar-collapsed{
+        grid-template-columns:1fr;
+      }
     }
 
     @media (max-width: 760px){
@@ -525,6 +585,7 @@
 
       <div class="actions">
         <button class="btn mobile-only" id="menuBtn">☰</button>
+        <button class="btn" id="sidebarToggleBtn">☷</button>
         <button class="btn" id="langToggle">English</button>
         <button class="btn" id="refreshBtn">تحديث</button>
         <button class="btn" id="fitBtn">تركيز ذكي</button>
@@ -535,7 +596,7 @@
       </div>
     </header>
 
-    <div class="layout">
+    <div class="layout" id="layout">
       <aside class="sidebar" id="sidebar">
         <section class="panel">
           <h2 id="overviewTitle">نظرة عامة</h2>
@@ -603,6 +664,13 @@
                 <input type="checkbox" id="satelliteToggle" />
               </label>
             </div>
+
+            <div class="quick-filters">
+              <button class="quick-chip" data-quick="all" id="quickAll">الكل</button>
+              <button class="quick-chip" data-quick="military" id="quickMilitary">عسكري</button>
+              <button class="quick-chip" data-quick="energy" id="quickEnergy">طاقة</button>
+              <button class="quick-chip" data-quick="iran" id="quickIran">إيران</button>
+            </div>
           </div>
         </section>
 
@@ -611,6 +679,7 @@
             <button class="tab-btn active" data-tab="feed" id="tabFeed">الخلاصة</button>
             <button class="tab-btn" data-tab="sites" id="tabSites">المواقع</button>
             <button class="tab-btn" data-tab="news" id="tabNews">الأخبار</button>
+            <button class="tab-btn" data-tab="timeline" id="tabTimeline">الخط الزمني</button>
           </div>
 
           <div class="tab-pane active" id="pane-feed">
@@ -623,6 +692,10 @@
 
           <div class="tab-pane" id="pane-news">
             <div class="feed" id="newsFeed"></div>
+          </div>
+
+          <div class="tab-pane" id="pane-timeline">
+            <div class="timeline" id="timeline"></div>
           </div>
         </section>
       </aside>
@@ -681,7 +754,6 @@
         fitBtn: "تركيز ذكي",
         autoRefreshText: "تحديث تلقائي",
         langButton: "English",
-        menuBtn: "القائمة",
         searchPlaceholder: "ابحث عن دولة أو موقع أو حدث",
         toggleSitesText: "إظهار المواقع",
         toggleEventsText: "إظهار الأحداث",
@@ -691,6 +763,7 @@
         tabFeed: "الخلاصة",
         tabSites: "المواقع",
         tabNews: "الأخبار",
+        tabTimeline: "الخط الزمني",
         legendTitle: "دليل الرموز",
         legendSites: "مواقع استراتيجية",
         legendMilitary: "أحداث عسكرية",
@@ -733,7 +806,6 @@
         fitBtn: "Smart focus",
         autoRefreshText: "Auto refresh",
         langButton: "العربية",
-        menuBtn: "Menu",
         searchPlaceholder: "Search country, site, or event",
         toggleSitesText: "Show sites",
         toggleEventsText: "Show events",
@@ -743,6 +815,7 @@
         tabFeed: "Feed",
         tabSites: "Sites",
         tabNews: "News",
+        tabTimeline: "Timeline",
         legendTitle: "Legend",
         legendSites: "Strategic sites",
         legendMilitary: "Military events",
@@ -765,6 +838,7 @@
     let currentMode = "middle_east";
     let autoRefreshEnabled = true;
     let autoRefreshTimer = null;
+    let currentQuick = "all";
 
     let events = [];
     let sites = [];
@@ -837,6 +911,14 @@
       return items;
     }
 
+    function applyQuickFilter(items){
+      if(currentQuick === "all") return items;
+      if(currentQuick === "iran") return items.filter(item => item.country === "Iran");
+      if(currentQuick === "military") return items.filter(item => String(item.type || item.category || "").toLowerCase().includes("military"));
+      if(currentQuick === "energy") return items.filter(item => String(item.type || item.category || "").toLowerCase().includes("energy"));
+      return items;
+    }
+
     function applySearchFilter(items){
       const term = state.search.trim().toLowerCase();
       if(!term) return items;
@@ -856,15 +938,15 @@
     }
 
     function getFilteredEvents(){
-      return applyMilitaryFilter(applySearchFilter(applyModeFilter(events)));
+      return applyMilitaryFilter(applySearchFilter(applyQuickFilter(applyModeFilter(events))));
     }
 
     function getFilteredSites(){
-      return applySearchFilter(applyModeFilter(sites));
+      return applySearchFilter(applyQuickFilter(applyModeFilter(sites)));
     }
 
     function getFilteredNews(){
-      return applyMilitaryFilter(applySearchFilter(applyModeFilter(news)));
+      return applyMilitaryFilter(applySearchFilter(applyQuickFilter(applyModeFilter(news))));
     }
 
     function getEventColor(type){
@@ -931,6 +1013,7 @@
 
       document.getElementById("eventsCount").textContent = filteredEvents.length;
       renderFeed(filteredEvents);
+      renderTimeline(filteredEvents);
     }
 
     function renderFeed(filteredEvents = getFilteredEvents()){
@@ -1036,6 +1119,29 @@
       });
     }
 
+    function renderTimeline(filteredEvents = getFilteredEvents()){
+      const container = document.getElementById("timeline");
+      container.innerHTML = "";
+
+      if(filteredEvents.length === 0){
+        container.innerHTML = `<div class="timeline-item">${escapeHtml(translations[currentLang].noFeed)}</div>`;
+        return;
+      }
+
+      [...filteredEvents]
+        .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))
+        .slice(0, 10)
+        .forEach(item => {
+          const div = document.createElement("div");
+          div.className = "timeline-item";
+          div.innerHTML = `
+            <strong>${escapeHtml(item.title || "Event")}</strong>
+            ${escapeHtml(item.date || "-")} — ${escapeHtml(item.country || "-")} — ${escapeHtml(item.type || "-")}
+          `;
+          container.appendChild(div);
+        });
+    }
+
     function redrawAll(){
       drawSites();
       drawEvents();
@@ -1062,20 +1168,20 @@
     }
 
     async function loadEvents(){
-      const response = await fetch(`data/events.json?v=${Date.now()}`);
+      const response = await fetch(`./data/events.json?v=${Date.now()}`);
       if(!response.ok) throw new Error("Failed to load events.json");
       events = await response.json();
     }
 
     async function loadSites(){
-      const response = await fetch(`data/sites.json?v=${Date.now()}`);
+      const response = await fetch(`./data/sites.json?v=${Date.now()}`);
       if(!response.ok) throw new Error("Failed to load sites.json");
       sites = await response.json();
     }
 
     async function loadNews(){
       try{
-        const apiResponse = await fetch(`/api/news?v=${Date.now()}`);
+        const apiResponse = await fetch(`./api/news?v=${Date.now()}`);
         if(apiResponse.ok){
           news = await apiResponse.json();
           return;
@@ -1084,7 +1190,7 @@
         console.error("API news failed, falling back.", error);
       }
 
-      const fallbackResponse = await fetch(`data/news.json?v=${Date.now()}`);
+      const fallbackResponse = await fetch(`./data/news.json?v=${Date.now()}`);
       if(!fallbackResponse.ok) throw new Error("Failed to load fallback news.json");
       news = await fallbackResponse.json();
       showToast(translations[currentLang].apiFallbackText);
@@ -1097,6 +1203,7 @@
         if(showMessage) showToast(translations[currentLang].refreshedText);
       }catch(error){
         console.error(error);
+        showToast(error.message || "Data loading failed");
       }
     }
 
@@ -1135,6 +1242,12 @@
       document.getElementById("iranBtn").classList.toggle("active", currentMode === "iran");
     }
 
+    function updateQuickButtons(){
+      document.querySelectorAll(".quick-chip").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.quick === currentQuick);
+      });
+    }
+
     function setViewMode(mode){
       currentMode = mode;
       const cfg = getModeConfig(mode);
@@ -1169,7 +1282,6 @@
       document.getElementById("fitBtn").textContent = t.fitBtn;
       document.getElementById("autoRefreshText").textContent = t.autoRefreshText;
       document.getElementById("langToggle").textContent = t.langButton;
-      document.getElementById("menuBtn").textContent = "☰";
       document.getElementById("searchInput").placeholder = t.searchPlaceholder;
       document.getElementById("toggleSitesText").textContent = t.toggleSitesText;
       document.getElementById("toggleEventsText").textContent = t.toggleEventsText;
@@ -1179,11 +1291,16 @@
       document.getElementById("tabFeed").textContent = t.tabFeed;
       document.getElementById("tabSites").textContent = t.tabSites;
       document.getElementById("tabNews").textContent = t.tabNews;
+      document.getElementById("tabTimeline").textContent = t.tabTimeline;
       document.getElementById("legendTitle").textContent = t.legendTitle;
       document.getElementById("legendSites").textContent = t.legendSites;
       document.getElementById("legendMilitary").textContent = t.legendMilitary;
       document.getElementById("legendEnergy").textContent = t.legendEnergy;
       document.getElementById("legendOther").textContent = t.legendOther;
+      document.getElementById("quickAll").textContent = lang === "ar" ? "الكل" : "All";
+      document.getElementById("quickMilitary").textContent = lang === "ar" ? "عسكري" : "Military";
+      document.getElementById("quickEnergy").textContent = lang === "ar" ? "طاقة" : "Energy";
+      document.getElementById("quickIran").textContent = lang === "ar" ? "إيران" : "Iran";
 
       updateModeTexts();
       redrawAll();
@@ -1214,8 +1331,13 @@
       document.getElementById("drawerBackdrop").classList.remove("show");
     }
 
+    function toggleSidebarCollapse(){
+      document.getElementById("layout").classList.toggle("sidebar-collapsed");
+    }
+
     document.getElementById("menuBtn").addEventListener("click", openSidebar);
     document.getElementById("drawerBackdrop").addEventListener("click", closeSidebar);
+    document.getElementById("sidebarToggleBtn").addEventListener("click", toggleSidebarCollapse);
 
     document.getElementById("langToggle").addEventListener("click", () => {
       setLanguage(currentLang === "ar" ? "en" : "ar");
@@ -1238,6 +1360,14 @@
     document.getElementById("globalBtn").addEventListener("click", () => setViewMode("global"));
     document.getElementById("middleEastBtn").addEventListener("click", () => setViewMode("middle_east"));
     document.getElementById("iranBtn").addEventListener("click", () => setViewMode("iran"));
+
+    document.querySelectorAll(".quick-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentQuick = btn.dataset.quick;
+        updateQuickButtons();
+        redrawAll();
+      });
+    });
 
     document.getElementById("searchInput").addEventListener("input", (e) => {
       state.search = e.target.value;
@@ -1277,9 +1407,10 @@
 
     setupTabs();
     setLanguage("ar");
+    updateQuickButtons();
     setViewMode("middle_east");
     refreshData(false);
     startAutoRefresh();
   </script>
 </body>
-</html>
+</html>" .. خذ وقتك قليلاً وابني اقوى ما لديك في التحديث لهذا الكود الجديد باضافات وتطور غير مسبوق يربطني حقًا بنتائج جميلة وعظيمة")]
