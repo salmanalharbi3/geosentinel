@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GeoSentinel</title>
-
+  <title>GeoSentinel Pro</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
   <style>
     :root{
       --bg:#020811;
@@ -28,10 +29,8 @@
       --radius:18px;
       --sidebar-width:440px;
     }
-
     *{box-sizing:border-box}
     html,body{height:100%;margin:0}
-
     body{
       font-family: Arial, sans-serif;
       color:var(--text);
@@ -41,13 +40,11 @@
         linear-gradient(180deg, #020811 0%, #06111d 100%);
       overflow:hidden;
     }
-
     .app{
       display:grid;
       grid-template-rows:74px 1fr;
       height:100vh;
     }
-
     .topbar{
       display:flex;
       align-items:center;
@@ -60,14 +57,12 @@
       position:relative;
       z-index:1200;
     }
-
     .brand{
       display:flex;
       align-items:center;
       gap:14px;
       min-width:0;
     }
-
     .logo{
       width:42px;
       height:42px;
@@ -76,13 +71,11 @@
       box-shadow:var(--shadow);
       flex-shrink:0;
     }
-
     .brand-meta h1{
       margin:0;
       font-size:20px;
       letter-spacing:.2px;
     }
-
     .brand-meta p{
       margin:4px 0 0;
       color:var(--muted);
@@ -92,7 +85,6 @@
       text-overflow:ellipsis;
       max-width:560px;
     }
-
     .actions{
       display:flex;
       gap:10px;
@@ -100,7 +92,6 @@
       justify-content:flex-end;
       align-items:center;
     }
-
     .btn{
       border:1px solid var(--line);
       background:var(--panel);
@@ -111,39 +102,36 @@
       font-size:14px;
       transition:.18s ease;
     }
-
     .btn:hover{
       transform:translateY(-1px);
       border-color:var(--line-strong);
     }
-
     .btn.primary{
       background:linear-gradient(135deg, rgba(83,168,255,.18), rgba(103,255,208,.12));
       border-color:rgba(83,168,255,.22);
     }
-
     .btn.active{
       border-color:rgba(83,168,255,.48);
       box-shadow:0 0 0 1px rgba(83,168,255,.18) inset;
     }
-
+    .premium-btn{
+      background:linear-gradient(135deg, #ffd700, #ff8c00);
+      color:#000;
+      font-weight:bold;
+    }
     .mobile-only{display:none}
-
     .layout{
       display:grid;
       grid-template-columns:var(--sidebar-width) 1fr;
       min-height:0;
       transition:.2s ease;
     }
-
     .layout.sidebar-collapsed{
       grid-template-columns:0 1fr;
     }
-
     .layout.map-full{
       grid-template-columns:0 1fr;
     }
-
     .sidebar{
       background:rgba(8,20,35,.58);
       border-left:1px solid var(--line);
@@ -152,14 +140,12 @@
       min-width:0;
       transition:.2s ease;
     }
-
     .layout.sidebar-collapsed .sidebar,
     .layout.map-full .sidebar{
       padding:0;
       border-left:none;
       overflow:hidden;
     }
-
     .panel{
       background:linear-gradient(180deg, rgba(19,36,61,.96), rgba(11,23,40,.96));
       border:1px solid var(--line);
@@ -168,57 +154,52 @@
       margin-bottom:14px;
       box-shadow:var(--shadow);
     }
-
     .panel h2,.panel h3{
       margin:0 0 10px;
       font-size:17px;
     }
-
     .muted{
       color:var(--muted);
       line-height:1.7;
       font-size:14px;
     }
-
     .stats{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));
       gap:10px;
       margin-top:12px;
     }
-
     .stat{
       background:rgba(255,255,255,.03);
       border:1px solid var(--line);
       border-radius:14px;
       padding:12px;
     }
-
     .stat .label{
       color:var(--muted);
       font-size:12px;
       margin-bottom:6px;
     }
-
     .stat .value{
       font-size:21px;
       font-weight:700;
     }
-
     .energy-grid{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));
       gap:10px;
       margin-top:12px;
     }
-
+    .chart-container{
+      height:200px;
+      margin-top:12px;
+    }
     .status-row{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       margin-top:12px;
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -230,7 +211,6 @@
       background:rgba(255,255,255,.03);
       color:var(--text);
     }
-
     .live-dot{
       width:8px;
       height:8px;
@@ -239,7 +219,6 @@
       box-shadow:0 0 12px var(--danger);
       display:inline-block;
     }
-
     .ok-dot{
       width:8px;
       height:8px;
@@ -248,7 +227,6 @@
       box-shadow:0 0 12px var(--success);
       display:inline-block;
     }
-
     .warn-dot{
       width:8px;
       height:8px;
@@ -257,12 +235,10 @@
       box-shadow:0 0 12px var(--warning);
       display:inline-block;
     }
-
     .toolbar-grid{
       display:grid;
       gap:10px;
     }
-
     .search-input{
       width:100%;
       background:rgba(255,255,255,.03);
@@ -273,25 +249,21 @@
       outline:none;
       font-size:14px;
     }
-
     .search-input:focus{
       border-color:rgba(83,168,255,.35);
       box-shadow:0 0 0 1px rgba(83,168,255,.18) inset;
     }
-
     .button-grid{
       display:grid;
-      grid-template-columns:1fr 1fr 1fr;
+      grid-template-columns:repeat(auto-fit, minmax(80px, 1fr));
       gap:10px;
     }
-
     .toggle-grid{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
       gap:10px;
       margin-top:10px;
     }
-
     .toggle{
       display:flex;
       align-items:center;
@@ -303,14 +275,12 @@
       border-radius:12px;
       font-size:13px;
     }
-
     .quick-filters{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
       margin-top:10px;
     }
-
     .quick-chip{
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
@@ -320,19 +290,16 @@
       cursor:pointer;
       font-size:12px;
     }
-
     .quick-chip.active{
       border-color:rgba(83,168,255,.48);
       background:rgba(83,168,255,.10);
     }
-
     .tabs{
       display:flex;
       gap:8px;
       margin-bottom:12px;
       flex-wrap:wrap;
     }
-
     .tab-btn{
       padding:9px 12px;
       border-radius:10px;
@@ -342,28 +309,27 @@
       cursor:pointer;
       font-size:13px;
     }
-
     .tab-btn.active{
       border-color:rgba(83,168,255,.45);
       background:rgba(83,168,255,.08);
     }
-
     .tab-pane{display:none}
     .tab-pane.active{display:block}
-
     .feed{
       display:flex;
       flex-direction:column;
       gap:10px;
     }
-
     .feed-item{
       background:rgba(255,255,255,.03);
       border:1px solid var(--line);
       border-radius:14px;
       padding:12px;
+      transition: transform 0.2s;
     }
-
+    .feed-item:hover{
+      transform: scale(1.02);
+    }
     .feed-item .meta{
       display:flex;
       justify-content:space-between;
@@ -373,33 +339,28 @@
       margin-bottom:6px;
       flex-wrap:wrap;
     }
-
     .feed-item .title{
       font-size:14px;
       font-weight:700;
       margin-bottom:4px;
       line-height:1.5;
     }
-
     .feed-item .desc{
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
       margin-bottom:8px;
     }
-
     .feed-item a{
       color:var(--accent);
       text-decoration:none;
       font-size:13px;
     }
-
     .mini-list{
       display:flex;
       flex-direction:column;
       gap:8px;
     }
-
     .mini-item{
       background:rgba(255,255,255,.03);
       border:1px solid var(--line);
@@ -408,20 +369,17 @@
       font-size:13px;
       color:var(--muted);
     }
-
     .mini-item strong{
       color:var(--text);
       display:block;
       margin-bottom:4px;
     }
-
     .timeline{
       display:flex;
       flex-direction:column;
       gap:8px;
       margin-top:10px;
     }
-
     .timeline-item{
       border-right:2px solid rgba(83,168,255,.35);
       padding:8px 12px;
@@ -430,23 +388,19 @@
       font-size:13px;
       color:var(--muted);
     }
-
     .timeline-item strong{
       display:block;
       color:var(--text);
       margin-bottom:4px;
     }
-
     .map-wrap{
       position:relative;
       min-height:0;
     }
-
     #map{
       width:100%;
       height:100%;
     }
-
     .floating{
       position:absolute;
       top:16px;
@@ -457,7 +411,6 @@
       flex-wrap:wrap;
       max-width:calc(100% - 32px);
     }
-
     .chip{
       background:rgba(10,20,35,.84);
       border:1px solid var(--line);
@@ -468,7 +421,6 @@
       backdrop-filter: blur(10px);
       box-shadow:var(--shadow);
     }
-
     .map-legend{
       position:absolute;
       bottom:16px;
@@ -484,7 +436,6 @@
       box-shadow:var(--shadow);
       font-size:13px;
     }
-
     .legend-row{
       display:flex;
       align-items:center;
@@ -492,14 +443,12 @@
       color:var(--muted);
       margin-top:8px;
     }
-
     .legend-dot{
       width:10px;
       height:10px;
       border-radius:50%;
       display:inline-block;
     }
-
     .toast{
       position:absolute;
       right:16px;
@@ -518,12 +467,10 @@
       max-width:320px;
       font-size:13px;
     }
-
     .toast.show{
       opacity:1;
       transform:translateY(0);
     }
-
     .drawer-backdrop{
       position:fixed;
       inset:0;
@@ -533,17 +480,24 @@
       pointer-events:none;
       transition:.18s ease;
     }
-
     .drawer-backdrop.show{
       opacity:1;
       pointer-events:auto;
     }
-
+    .missile-icon {
+      background: none;
+      border: none;
+      font-size: 28px;
+      text-shadow: 0 0 6px #ff0000;
+    }
+    .heat-layer{opacity:0.7;}
+    .premium-content{display:none;}
+    .premium-active .premium-content{display:block;}
+    .premium-active .basic-content{display:none;}
     @media (max-width: 1100px){
       .layout{
         grid-template-columns:1fr;
       }
-
       .sidebar{
         position:fixed;
         top:74px;
@@ -556,23 +510,19 @@
         border-left:1px solid var(--line);
         border-top:none;
       }
-
       html[dir="ltr"] .sidebar{
         right:auto;
         left:0;
         transform:translateX(-100%);
       }
-
       .sidebar.open{
         transform:translateX(0);
       }
-
       .mobile-only{display:inline-flex}
       .layout.sidebar-collapsed{
         grid-template-columns:1fr;
       }
     }
-
     @media (max-width: 760px){
       .topbar{
         flex-direction:column;
@@ -599,17 +549,15 @@
 </head>
 <body>
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
-
   <div class="app">
     <header class="topbar">
       <div class="brand">
         <div class="logo"></div>
         <div class="brand-meta">
-          <h1>GeoSentinel</h1>
-          <p id="brandSubtitle">منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة</p>
+          <h1>GeoSentinel Pro</h1>
+          <p id="brandSubtitle">منصة استخبارات مفتوحة متقدمة مع تتبع حي وتحليلات عسكرية</p>
         </div>
       </div>
-
       <div class="actions">
         <button class="btn mobile-only" id="menuBtn">☰</button>
         <button class="btn" id="sidebarToggleBtn">☷</button>
@@ -621,17 +569,16 @@
           <span class="live-dot"></span>
           <span id="autoRefreshText">تحديث تلقائي</span>
         </button>
+        <button class="btn premium-btn" id="subscribeBtn">الاشتراك المدفوع</button>
       </div>
     </header>
-
     <div class="layout" id="layout">
       <aside class="sidebar" id="sidebar">
         <section class="panel">
           <h2 id="overviewTitle">نظرة عامة</h2>
           <div class="muted" id="overviewText">
-            GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالأقاليم الحساسة مع تركيز افتتاحي على الشرق الأوسط وإيران.
+            GeoSentinel Pro: منصة متقدمة للخرائط الاستخباراتية مع تتبع حي للصواريخ، تحليلات عسكرية، بث مباشر، ودعم مدفوع للميزات التشغيلية.
           </div>
-
           <div class="stats">
             <div class="stat">
               <div class="label" id="eventsLabel">الأحداث</div>
@@ -646,11 +593,14 @@
               <div class="value" id="newsCount">0</div>
             </div>
             <div class="stat">
+              <div class="label" id="missilesLabel">الصواريخ</div>
+              <div class="value" id="missilesCount">0</div>
+            </div>
+            <div class="stat">
               <div class="label" id="energyLabel">برنت</div>
               <div class="value" id="brentValue">--</div>
             </div>
           </div>
-
           <div class="energy-grid">
             <div class="stat">
               <div class="label" id="wtiLabel">WTI</div>
@@ -661,160 +611,187 @@
               <div class="value" id="updatedValue">--</div>
             </div>
           </div>
-
+          <div class="chart-container">
+            <canvas id="energyChart"></canvas>
+          </div>
           <div class="status-row">
             <span class="badge" id="focusBadge">التركيز: الشرق الأوسط</span>
-            <span class="badge" id="syncBadge">المصدر: JSON/API</span>
+            <span class="badge" id="syncBadge">المصدر: JSON/API/X</span>
             <span class="badge"><span id="healthDot" class="warn-dot"></span><span id="liveStatusText">مراقبة فعّالة</span></span>
           </div>
         </section>
-
         <section class="panel">
-          <h3 id="controlsTitle">أدوات التحكم</h3>
-
+          <h3 id="controlsTitle">أدوات التحكم المتقدمة</h3>
           <div class="toolbar-grid">
-            <input class="search-input" id="searchInput" type="text" placeholder="ابحث عن دولة أو موقع أو حدث" />
-
+            <input class="search-input" id="searchInput" type="text" placeholder="ابحث عن دولة أو موقع أو حدث أو صاروخ" />
             <div class="button-grid">
               <button class="btn" id="globalBtn">العالم</button>
               <button class="btn active" id="middleEastBtn">الشرق الأوسط</button>
               <button class="btn" id="iranBtn">Iran Focus</button>
+              <button class="btn" id="customRegionBtn">منطقة مخصصة</button>
             </div>
-
             <div class="toggle-grid">
               <label class="toggle">
                 <span id="toggleSitesText">إظهار المواقع</span>
                 <input type="checkbox" id="sitesToggle" checked />
               </label>
-
               <label class="toggle">
                 <span id="toggleEventsText">إظهار الأحداث</span>
                 <input type="checkbox" id="eventsToggle" checked />
               </label>
-
               <label class="toggle">
                 <span id="toggleNewsText">إظهار الأخبار</span>
                 <input type="checkbox" id="newsToggle" checked />
               </label>
-
               <label class="toggle">
-                <span id="toggleOnlyMilitaryText">عسكري فقط</span>
+                <span id="toggleMissilesText">إظهار الصواريخ</span>
+                <input type="checkbox" id="missilesToggle" checked />
+              </label>
+              <label class="toggle">
+                <span id="toggleMilitaryText">عسكري فقط</span>
                 <input type="checkbox" id="militaryOnlyToggle" />
               </label>
-
               <label class="toggle">
                 <span id="toggleSatelliteText">طبقة فضائية</span>
                 <input type="checkbox" id="satelliteToggle" />
               </label>
+              <label class="toggle premium-content">
+                <span id="toggleHeatmapText">خريطة حرارية</span>
+                <input type="checkbox" id="heatmapToggle" />
+              </label>
+              <label class="toggle premium-content">
+                <span id="toggleAircraftText">طائرات عسكرية</span>
+                <input type="checkbox" id="aircraftToggle" />
+              </label>
             </div>
-
             <div class="quick-filters">
               <button class="quick-chip" data-quick="all" id="quickAll">الكل</button>
               <button class="quick-chip" data-quick="military" id="quickMilitary">عسكري</button>
               <button class="quick-chip" data-quick="energy" id="quickEnergy">طاقة</button>
               <button class="quick-chip" data-quick="iran" id="quickIran">إيران</button>
+              <button class="quick-chip" data-quick="missile" id="quickMissile">صواريخ</button>
             </div>
           </div>
         </section>
-
+        <section class="panel premium-content">
+          <h3 id="premiumTitle">ميزات مدفوعة</h3>
+          <div class="muted">تحليلات متقدمة، تتبع مسارات، وبث حي عسكري.</div>
+          <div class="stats">
+            <div class="stat">
+              <div class="label">تحذيرات</div>
+              <div class="value" id="alertsCount">0</div>
+            </div>
+            <div class="stat">
+              <div class="label">حركة عسكرية</div>
+              <div class="value" id="militaryMovCount">0</div>
+            </div>
+          </div>
+        </section>
         <section class="panel">
           <div class="tabs">
             <button class="tab-btn active" data-tab="feed" id="tabFeed">الخلاصة</button>
             <button class="tab-btn" data-tab="sites" id="tabSites">المواقع</button>
             <button class="tab-btn" data-tab="news" id="tabNews">الأخبار</button>
             <button class="tab-btn" data-tab="timeline" id="tabTimeline">الخط الزمني</button>
+            <button class="tab-btn premium-content" data-tab="alerts" id="tabAlerts">التحذيرات</button>
           </div>
-
           <div class="tab-pane active" id="pane-feed">
             <div class="feed" id="feed"></div>
           </div>
-
           <div class="tab-pane" id="pane-sites">
             <div class="mini-list" id="sitesList"></div>
           </div>
-
           <div class="tab-pane" id="pane-news">
             <div class="feed" id="newsFeed"></div>
           </div>
-
           <div class="tab-pane" id="pane-timeline">
             <div class="timeline" id="timeline"></div>
           </div>
+          <div class="tab-pane premium-content" id="pane-alerts">
+            <div class="feed" id="alertsFeed"></div>
+          </div>
         </section>
       </aside>
-
       <main class="map-wrap">
         <div class="floating">
-          <div class="chip" id="chip1">خريطة تشغيلية</div>
-          <div class="chip" id="chip2">استخبارات مفتوحة</div>
+          <div class="chip" id="chip1">خريطة تشغيلية متقدمة</div>
+          <div class="chip" id="chip2">استخبارات مفتوحة مع بث حي</div>
           <div class="chip" id="chip3">التركيز: الشرق الأوسط</div>
+          <div class="chip premium-content" id="chip4">ميزات عسكرية</div>
         </div>
-
         <div class="map-legend">
           <strong id="legendTitle">دليل الرموز</strong>
           <div class="legend-row"><span class="legend-dot" style="background:#53a8ff"></span><span id="legendSites">مواقع استراتيجية</span></div>
           <div class="legend-row"><span class="legend-dot" style="background:#ff5b7f"></span><span id="legendMilitary">أحداث عسكرية</span></div>
           <div class="legend-row"><span class="legend-dot" style="background:#ffc857"></span><span id="legendEnergy">أحداث طاقة</span></div>
           <div class="legend-row"><span class="legend-dot" style="background:#67ffd0"></span><span id="legendOther">أخبار وتحولات عامة</span></div>
+          <div class="legend-row"><span class="legend-dot" style="background:#ff0000"></span><span id="legendMissiles">إطلاقات صواريخ</span></div>
+          <div class="legend-row premium-content"><span class="legend-dot" style="background:#00ff00"></span><span id="legendAircraft">طائرات عسكرية</span></div>
         </div>
-
         <div id="toast" class="toast"></div>
         <div id="map"></div>
       </main>
     </div>
   </div>
-
   <script>
     const MIDDLE_EAST_COUNTRIES = [
       "Iran","Saudi Arabia","Iraq","UAE","Qatar","Kuwait","Oman","Bahrain",
       "Yemen","Jordan","Syria","Lebanon","Israel","Palestine","Turkey","Egypt"
     ];
-
     const translations = {
       ar: {
         dir: "rtl",
-        brandSubtitle: "منصة استخبارات مفتوحة وتحليل جيوسياسي وطاقة",
+        brandSubtitle: "منصة استخبارات مفتوحة متقدمة مع تتبع حي وتحليلات عسكرية",
         overviewTitle: "نظرة عامة",
-        overviewText: "GeoSentinel منصة أولية تُعنى بالخرائط الاستخباراتية المفتوحة، والتحليل الجيوسياسي، وربط الأحداث بالأقاليم الحساسة مع تركيز افتتاحي على الشرق الأوسط وإيران.",
+        overviewText: "GeoSentinel Pro: منصة متقدمة للخرائط الاستخباراتية مع تتبع حي للصواريخ، تحليلات عسكرية، بث مباشر، ودعم مدفوع للميزات التشغيلية.",
         eventsLabel: "الأحداث",
         sitesLabel: "المواقع",
         newsLabel: "الأخبار",
+        missilesLabel: "الصواريخ",
         energyLabel: "برنت",
         wtiLabel: "WTI",
         updatedLabel: "آخر تحديث",
-        controlsTitle: "أدوات التحكم",
+        controlsTitle: "أدوات التحكم المتقدمة",
+        premiumTitle: "ميزات مدفوعة",
         focusGlobal: "التركيز: العالم",
         focusMiddleEast: "التركيز: الشرق الأوسط",
         focusIran: "التركيز: إيران",
-        syncText: "المصدر: JSON/API",
+        syncText: "المصدر: JSON/API/X",
         liveStatusText: "مراقبة فعّالة",
-        chip1: "خريطة تشغيلية",
-        chip2: "استخبارات مفتوحة",
+        chip1: "خريطة تشغيلية متقدمة",
+        chip2: "استخبارات مفتوحة مع بث حي",
         chipGlobal: "التركيز: العالم",
         chipMiddleEast: "التركيز: الشرق الأوسط",
         chipIran: "التركيز: إيران",
         globalBtn: "العالم",
         middleEastBtn: "الشرق الأوسط",
         iranBtn: "Iran Focus",
+        customRegionBtn: "منطقة مخصصة",
         refreshBtn: "تحديث",
         fitBtn: "تركيز ذكي",
         autoRefreshText: "تحديث تلقائي",
         langButton: "English",
-        searchPlaceholder: "ابحث عن دولة أو موقع أو حدث",
+        searchPlaceholder: "ابحث عن دولة أو موقع أو حدث أو صاروخ",
         toggleSitesText: "إظهار المواقع",
         toggleEventsText: "إظهار الأحداث",
         toggleNewsText: "إظهار الأخبار",
+        toggleMissilesText: "إظهار الصواريخ",
         toggleOnlyMilitaryText: "عسكري فقط",
         toggleSatelliteText: "طبقة فضائية",
+        toggleHeatmapText: "خريطة حرارية",
+        toggleAircraftText: "طائرات عسكرية",
         tabFeed: "الخلاصة",
         tabSites: "المواقع",
         tabNews: "الأخبار",
         tabTimeline: "الخط الزمني",
+        tabAlerts: "التحذيرات",
         legendTitle: "دليل الرموز",
         legendSites: "مواقع استراتيجية",
         legendMilitary: "أحداث عسكرية",
         legendEnergy: "أحداث طاقة",
         legendOther: "أخبار وتحولات عامة",
+        legendMissiles: "إطلاقات صواريخ",
+        legendAircraft: "طائرات عسكرية",
         countryText: "الدولة",
         typeText: "التصنيف",
         noFeed: "لا توجد عناصر معروضة حاليًا.",
@@ -828,56 +805,66 @@
         fullscreenOnText: "تم تفعيل وضع ملء الشاشة.",
         fullscreenOffText: "تم إلغاء وضع ملء الشاشة.",
         healthOkText: "المصدر متصل",
-        healthWarnText: "المصدر احتياطي"
+        healthWarnText: "المصدر احتياطي",
+        subscribeText: "الاشتراك المدفوع"
       },
       en: {
         dir: "ltr",
-        brandSubtitle: "Open-source intelligence, geopolitical analysis, and energy platform",
+        brandSubtitle: "Advanced open-source intelligence platform with live tracking and military analysis",
         overviewTitle: "Overview",
-        overviewText: "GeoSentinel is an early-stage platform for open-source intelligence mapping, geopolitical analysis, and region-sensitive event tracking, with an initial focus on the Middle East and Iran.",
+        overviewText: "GeoSentinel Pro: Advanced platform for intelligence mapping, live missile tracking, military analysis, live streaming, and premium operational support.",
         eventsLabel: "Events",
         sitesLabel: "Sites",
         newsLabel: "News",
+        missilesLabel: "Missiles",
         energyLabel: "Brent",
         wtiLabel: "WTI",
         updatedLabel: "Updated",
-        controlsTitle: "Controls",
+        controlsTitle: "Advanced Controls",
+        premiumTitle: "Premium Features",
         focusGlobal: "Focus: Global",
         focusMiddleEast: "Focus: Middle East",
         focusIran: "Focus: Iran",
-        syncText: "Source: JSON/API",
+        syncText: "Source: JSON/API/X",
         liveStatusText: "Monitoring active",
-        chip1: "Operational map",
-        chip2: "Open-source intelligence",
+        chip1: "Advanced Operational Map",
+        chip2: "Open-source Intelligence with Live Stream",
         chipGlobal: "Focus: Global",
         chipMiddleEast: "Focus: Middle East",
         chipIran: "Focus: Iran",
         globalBtn: "Global",
         middleEastBtn: "Middle East",
         iranBtn: "Iran Focus",
+        customRegionBtn: "Custom Region",
         refreshBtn: "Refresh",
-        fitBtn: "Smart focus",
-        autoRefreshText: "Auto refresh",
+        fitBtn: "Smart Focus",
+        autoRefreshText: "Auto Refresh",
         langButton: "العربية",
-        searchPlaceholder: "Search country, site, or event",
-        toggleSitesText: "Show sites",
-        toggleEventsText: "Show events",
-        toggleNewsText: "Show news",
-        toggleOnlyMilitaryText: "Military only",
-        toggleSatelliteText: "Satellite layer",
+        searchPlaceholder: "Search country, site, event or missile",
+        toggleSitesText: "Show Sites",
+        toggleEventsText: "Show Events",
+        toggleNewsText: "Show News",
+        toggleMissilesText: "Show Missiles",
+        toggleOnlyMilitaryText: "Military Only",
+        toggleSatelliteText: "Satellite Layer",
+        toggleHeatmapText: "Heatmap",
+        toggleAircraftText: "Military Aircraft",
         tabFeed: "Feed",
         tabSites: "Sites",
         tabNews: "News",
         tabTimeline: "Timeline",
+        tabAlerts: "Alerts",
         legendTitle: "Legend",
-        legendSites: "Strategic sites",
-        legendMilitary: "Military events",
-        legendEnergy: "Energy events",
-        legendOther: "General news",
+        legendSites: "Strategic Sites",
+        legendMilitary: "Military Events",
+        legendEnergy: "Energy Events",
+        legendOther: "General News",
+        legendMissiles: "Missile Launches",
+        legendAircraft: "Military Aircraft",
         countryText: "Country",
         typeText: "Category",
         noFeed: "No items are currently displayed.",
-        openSourceText: "Open source",
+        openSourceText: "Open Source",
         refreshedText: "Data refreshed successfully.",
         autoOnText: "Auto refresh enabled.",
         autoOffText: "Auto refresh disabled.",
@@ -887,50 +874,60 @@
         fullscreenOnText: "Fullscreen mode enabled.",
         fullscreenOffText: "Fullscreen mode disabled.",
         healthOkText: "Source connected",
-        healthWarnText: "Fallback source"
+        healthWarnText: "Fallback source",
+        subscribeText: "Subscribe Premium"
       }
     };
-
     let currentLang = "ar";
     let currentMode = "middle_east";
     let autoRefreshEnabled = true;
     let autoRefreshTimer = null;
     let currentQuick = "all";
-
+    let isPremium = localStorage.getItem('premium') === 'true';
     let events = [];
     let sites = [];
     let news = [];
+    let missiles = [];
+    let alerts = [];
+    let aircraft = [];
+    let energyHistory = []; // للرسم البياني
     let energy = null;
-
     const state = {
       search: "",
       showSites: true,
       showEvents: true,
       showNews: true,
+      showMissiles: true,
       militaryOnly: false,
-      showSatellite: false
+      showSatellite: false,
+      showHeatmap: false,
+      showAircraft: false
     };
-
     const map = L.map("map", { zoomControl: true }).setView([26, 45], 5);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
-
     const satelliteLayer = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       { attribution: "Tiles &copy; Esri" }
     );
-
     const eventsLayer = L.layerGroup().addTo(map);
     const sitesLayer = L.layerGroup().addTo(map);
-
-    L.control.layers(null, {
-      "Events / الأحداث": eventsLayer,
-      "Sites / المواقع": sitesLayer,
-      "Satellite / فضائية": satelliteLayer
+    const missilesLayer = L.layerGroup().addTo(map);
+    const aircraftLayer = L.layerGroup().addTo(map);
+    const heatmapLayer = L.layerGroup().addTo(map); // للخريطة الحرارية
+    const pathsLayer = L.layerGroup().addTo(map); // لمسارات الصواريخ
+    L.control.layers({
+      "OSM": osmLayer,
+      "Satellite": satelliteLayer
+    }, {
+      "Events": eventsLayer,
+      "Sites": sitesLayer,
+      "Missiles": missilesLayer,
+      "Aircraft": aircraftLayer,
+      "Heatmap": heatmapLayer
     }, { collapsed: false }).addTo(map);
-
+    const stripe = Stripe('pk_test_your_key'); // استبدل بـ key الحقيقي
     function escapeHtml(value){
       return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -939,7 +936,6 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
-
     function showToast(message){
       const toast = document.getElementById("toast");
       toast.textContent = message;
@@ -949,7 +945,6 @@
         toast.classList.remove("show");
       }, 2400);
     }
-
     function formatUpdated(iso){
       if(!iso) return "--";
       try{
@@ -962,7 +957,6 @@
         return "--";
       }
     }
-
     function setHealthStatus(isFallback){
       const dot = document.getElementById("healthDot");
       const text = document.getElementById("liveStatusText");
@@ -971,16 +965,15 @@
         ? translations[currentLang].healthWarnText
         : translations[currentLang].healthOkText;
     }
-
     function getModeConfig(mode){
       const config = {
         global: { center: [20, 10], zoom: 2 },
         middle_east: { center: [26, 45], zoom: 5 },
-        iran: { center: [32, 53], zoom: 6 }
+        iran: { center: [32, 53], zoom: 6 },
+        custom: { center: [0, 0], zoom: 3 } // مخصص
       };
       return config[mode];
     }
-
     function applyModeFilter(items){
       if(currentMode === "iran"){
         return items.filter(item => item.country === "Iran");
@@ -990,15 +983,14 @@
       }
       return items;
     }
-
     function applyQuickFilter(items){
       if(currentQuick === "all") return items;
       if(currentQuick === "iran") return items.filter(item => item.country === "Iran");
       if(currentQuick === "military") return items.filter(item => String(item.type || item.category || "").toLowerCase().includes("military"));
       if(currentQuick === "energy") return items.filter(item => String(item.type || item.category || "").toLowerCase().includes("energy"));
+      if(currentQuick === "missile") return items.filter(item => String(item.type || item.category || "").toLowerCase().includes("missile"));
       return items;
     }
-
     function applySearchFilter(items){
       const term = state.search.trim().toLowerCase();
       if(!term) return items;
@@ -1006,7 +998,6 @@
         Object.values(item).some(value => String(value).toLowerCase().includes(term))
       );
     }
-
     function applyMilitaryFilter(items){
       if(!state.militaryOnly) return items;
       return items.filter(item => {
@@ -1014,341 +1005,323 @@
         return tag.includes("military");
       });
     }
-
     function getFilteredEvents(){
       return applyMilitaryFilter(applySearchFilter(applyQuickFilter(applyModeFilter(events))));
     }
-
     function getFilteredSites(){
       return applySearchFilter(applyQuickFilter(applyModeFilter(sites)));
     }
-
     function getFilteredNews(){
       return applyMilitaryFilter(applySearchFilter(applyQuickFilter(applyModeFilter(news))));
     }
-
+    function getFilteredMissiles(){
+      return applyMilitaryFilter(applySearchFilter(applyQuickFilter(applyModeFilter(missiles))));
+    }
+    function getFilteredAircraft(){
+      return applyMilitaryFilter(applySearchFilter(applyQuickFilter(applyModeFilter(aircraft))));
+    }
+    function getFilteredAlerts(){
+      return applySearchFilter(applyQuickFilter(applyModeFilter(alerts)));
+    }
     function getEventColor(type){
       const t = String(type || "").toLowerCase();
       if(t.includes("military")) return "#ff5b7f";
       if(t.includes("energy")) return "#ffc857";
+      if(t.includes("missile")) return "#ff0000";
       return "#67ffd0";
     }
-
     function drawSites(){
       sitesLayer.clearLayers();
       const filteredSites = getFilteredSites();
-
       if(state.showSites){
         filteredSites.forEach(site => {
-          const marker = L.circleMarker(site.coords, {
+          const marker = L.circleMarker(site.coords || [site.lat, site.lon], {
             radius: 7,
             weight: 2,
             color: "#53a8ff",
             fillColor: "#53a8ff",
             fillOpacity: 0.85
           });
-
           marker.bindPopup(`
             <b>${escapeHtml(site.name || "Site")}</b><br>
             ${escapeHtml(translations[currentLang].countryText)}: ${escapeHtml(site.country || "-")}<br>
             ${escapeHtml(translations[currentLang].typeText)}: ${escapeHtml(site.type || "-")}
           `);
-
           marker.addTo(sitesLayer);
         });
       }
-
       document.getElementById("sitesCount").textContent = filteredSites.length;
       renderSitesList(filteredSites);
     }
-
     function drawEvents(){
       eventsLayer.clearLayers();
       const filteredEvents = getFilteredEvents();
-
       if(state.showEvents){
         filteredEvents.forEach(event => {
           const color = getEventColor(event.type);
-          const marker = L.circleMarker(event.coords, {
+          const marker = L.circleMarker(event.coords || [event.lat, event.lon], {
             radius: 8,
             weight: 2,
             color,
             fillColor: color,
             fillOpacity: 0.85
           });
-
           marker.bindPopup(`
             <b>${escapeHtml(event.title || "Event")}</b><br>
             ${escapeHtml(translations[currentLang].countryText)}: ${escapeHtml(event.country || "-")}<br>
             ${escapeHtml(event.date || "-")}<br>
             ${escapeHtml(translations[currentLang].typeText)}: ${escapeHtml(event.type || "-")}
           `);
-
           marker.addTo(eventsLayer);
         });
       }
-
       document.getElementById("eventsCount").textContent = filteredEvents.length;
       renderFeed(filteredEvents);
       renderTimeline(filteredEvents);
     }
-
-    function renderFeed(filteredEvents = getFilteredEvents()){
-      const container = document.getElementById("feed");
+    function drawMissiles(){
+      missilesLayer.clearLayers();
+      pathsLayer.clearLayers();
+      const filteredMissiles = getFilteredMissiles();
+      if(state.showMissiles){
+        filteredMissiles.forEach(missile => {
+          const icon = L.divIcon({
+            className: 'missile-icon',
+            html: '🚀',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+          });
+          const marker = L.marker([missile.lat, missile.lon], { icon }).addTo(missilesLayer);
+          marker.bindPopup(`
+            <b>${escapeHtml(missile.title || 'إطلاق صاروخ')}</b><br>
+            الوقت: ${escapeHtml(missile.time || new Date().toISOString())}<br>
+            المصدر: ${escapeHtml(missile.source || 'OSINT')}<br>
+            ${escapeHtml(missile.desc || '')}
+          `);
+          // رسم مسار إذا كان هناك هدف
+          if(missile.targetLat && missile.targetLon){
+            const launch = [missile.lon, missile.lat];
+            const target = [missile.targetLon, missile.targetLat];
+            const line = turf.lineString([launch, target]);
+            L.geoJSON(line, {
+              style: { color: '#ff0000', weight: 3, dashArray: '5, 5' }
+            }).addTo(pathsLayer);
+          }
+        });
+      }
+      document.getElementById("missilesCount").textContent = filteredMissiles.length;
+    }
+    function drawAircraft(){
+      aircraftLayer.clearLayers();
+      if(!isPremium || !state.showAircraft) return;
+      const filteredAircraft = getFilteredAircraft();
+      filteredAircraft.forEach(air => {
+        const marker = L.circleMarker([air.lat, air.lon], {
+          radius: 6,
+          color: "#00ff00",
+          fillColor: "#00ff00",
+          fillOpacity: 0.8
+        });
+        marker.bindPopup(`
+          <b>${escapeHtml(air.type || 'طائرة عسكرية')}</b><br>
+          السرعة: ${air.speed || '-'}<br>
+          الارتفاع: ${air.alt || '-'}<br>
+          المصدر: ADS-B
+        `);
+        marker.addTo(aircraftLayer);
+      });
+    }
+    function drawHeatmap(){
+      heatmapLayer.clearLayers();
+      if(!isPremium || !state.showHeatmap) return;
+      // استخدام بيانات من الأحداث لخريطة حرارية بسيطة
+      const heatPoints = getFilteredEvents().map(e => [e.lat, e.lon, 1]);
+      const heat = L.heatLayer(heatPoints, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17
+      }).addTo(heatmapLayer);
+    }
+    function renderFeed(filteredItems = [], containerId = "feed"){
+      const container = document.getElementById(containerId);
       container.innerHTML = "";
-
-      const items = [];
-
-      if(state.showEvents){
-        filteredEvents.slice(0, 6).forEach(item => {
-          items.push({
-            sortKey: item.date || "",
-            metaLeft: item.date || "",
-            metaRight: item.country || "",
-            title: item.title || "Untitled event",
-            desc: item.type || "",
-            link: ""
-          });
-        });
-      }
-
-      if(state.showNews){
-        getFilteredNews().slice(0, 6).forEach(item => {
-          items.push({
-            sortKey: item.date || "",
-            metaLeft: item.source || "",
-            metaRight: item.date || "",
-            title: item.title || "Untitled news",
-            desc: `${item.country || ""} — ${item.category || ""}`,
-            link: item.url || ""
-          });
-        });
-      }
-
-      items.sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey)));
-
-      if(items.length === 0){
+      if(filteredItems.length === 0){
         container.innerHTML = `<div class="feed-item"><div class="desc">${escapeHtml(translations[currentLang].noFeed)}</div></div>`;
         return;
       }
-
-      items.slice(0, 10).forEach(item => {
+      filteredItems.slice(0, 12).forEach(item => {
         const div = document.createElement("div");
         div.className = "feed-item";
         div.innerHTML = `
           <div class="meta">
-            <span>${escapeHtml(item.metaLeft)}</span>
-            <span>${escapeHtml(item.metaRight)}</span>
+            <span>${escapeHtml(item.date || item.time || "")}</span>
+            <span>${escapeHtml(item.country || "")}</span>
           </div>
-          <div class="title">${escapeHtml(item.title)}</div>
-          <div class="desc">${escapeHtml(item.desc)}</div>
-          ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(translations[currentLang].openSourceText)}</a>` : ""}
+          <div class="title">${escapeHtml(item.title || "Untitled")}</div>
+          <div class="desc">${escapeHtml(item.desc || item.type || "")}</div>
+          ${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank">${escapeHtml(translations[currentLang].openSourceText)}</a>` : ""}
         `;
         container.appendChild(div);
       });
     }
-
-    function renderSitesList(filteredSites = getFilteredSites()){
-      const container = document.getElementById("sitesList");
-      container.innerHTML = "";
-
-      if(filteredSites.length === 0){
-        container.innerHTML = `<div class="mini-item">${escapeHtml(translations[currentLang].noFeed)}</div>`;
-        return;
-      }
-
-      filteredSites.slice(0, 12).forEach(site => {
-        const div = document.createElement("div");
-        div.className = "mini-item";
-        div.innerHTML = `
-          <strong>${escapeHtml(site.name || "Site")}</strong>
-          ${escapeHtml(site.country || "-")} — ${escapeHtml(site.type || "-")}
-        `;
-        container.appendChild(div);
-      });
+    function renderSitesList(filteredSites){
+      renderFeed(filteredSites, "sitesList");
     }
-
-    function renderNewsFeed(filteredNews = getFilteredNews()){
-      const container = document.getElementById("newsFeed");
-      container.innerHTML = "";
-      document.getElementById("newsCount").textContent = filteredNews.length;
-
-      if(!state.showNews || filteredNews.length === 0){
-        container.innerHTML = `<div class="feed-item"><div class="desc">${escapeHtml(translations[currentLang].noFeed)}</div></div>`;
-        return;
-      }
-
-      filteredNews.slice(0, 12).forEach(item => {
-        const div = document.createElement("div");
-        div.className = "feed-item";
-        div.innerHTML = `
-          <div class="meta">
-            <span>${escapeHtml(item.source || "")}</span>
-            <span>${escapeHtml(item.date || "")}</span>
-          </div>
-          <div class="title">${escapeHtml(item.title || "Untitled news")}</div>
-          <div class="desc">${escapeHtml(item.country || "")} — ${escapeHtml(item.category || "")}</div>
-          ${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(translations[currentLang].openSourceText)}</a>` : ""}
-        `;
-        container.appendChild(div);
-      });
+    function renderNewsFeed(){
+      renderFeed(getFilteredNews(), "newsFeed");
+      document.getElementById("newsCount").textContent = getFilteredNews().length;
     }
-
-    function renderTimeline(filteredEvents = getFilteredEvents()){
-      const container = document.getElementById("timeline");
-      container.innerHTML = "";
-
-      if(filteredEvents.length === 0){
-        container.innerHTML = `<div class="timeline-item">${escapeHtml(translations[currentLang].noFeed)}</div>`;
-        return;
-      }
-
-      [...filteredEvents]
-        .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))
-        .slice(0, 10)
-        .forEach(item => {
-          const div = document.createElement("div");
-          div.className = "timeline-item";
-          div.innerHTML = `
-            <strong>${escapeHtml(item.title || "Event")}</strong>
-            ${escapeHtml(item.date || "-")} — ${escapeHtml(item.country || "-")} — ${escapeHtml(item.type || "-")}
-          `;
-          container.appendChild(div);
-        });
+    function renderTimeline(filteredEvents){
+      renderFeed(filteredEvents, "timeline");
     }
-
+    function renderAlertsFeed(){
+      if(!isPremium) return;
+      renderFeed(getFilteredAlerts(), "alertsFeed");
+      document.getElementById("alertsCount").textContent = getFilteredAlerts().length;
+    }
     function renderEnergy(){
       const brentEl = document.getElementById("brentValue");
       const wtiEl = document.getElementById("wtiValue");
       const updatedEl = document.getElementById("updatedValue");
-
       if(!energy){
         brentEl.textContent = "--";
         wtiEl.textContent = "--";
         updatedEl.textContent = "--";
         return;
       }
-
-      brentEl.textContent = (typeof energy.brent_usd === "number" && energy.brent_usd > 0) ? `$${energy.brent_usd}` : "--";
-      wtiEl.textContent = (typeof energy.wti_usd === "number" && energy.wti_usd > 0) ? `$${energy.wti_usd}` : "--";
+      brentEl.textContent = energy.brent_usd ? `$${energy.brent_usd}` : "--";
+      wtiEl.textContent = energy.wti_usd ? `$${energy.wti_usd}` : "--";
       updatedEl.textContent = formatUpdated(energy.updated_at);
+      // رسم الرسم البياني
+      if(energyHistory.length > 0){
+        const ctx = document.getElementById("energyChart").getContext("2d");
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: energyHistory.map(h => h.date),
+            datasets: [{
+              label: 'Brent',
+              data: energyHistory.map(h => h.brent),
+              borderColor: var(--accent)
+            }, {
+              label: 'WTI',
+              data: energyHistory.map(h => h.wti),
+              borderColor: var(--accent-2)
+            }]
+          },
+          options: { scales: { y: { beginAtZero: false } } }
+        });
+      }
     }
-
     function redrawAll(){
       drawSites();
       drawEvents();
+      drawMissiles();
+      drawAircraft();
+      drawHeatmap();
       renderNewsFeed();
+      renderAlertsFeed();
       renderEnergy();
     }
-
     function smartFit(){
       const points = [];
-
-      if(state.showSites){
-        getFilteredSites().forEach(item => {
-          if(Array.isArray(item.coords) && item.coords.length === 2) points.push(item.coords);
+      // جمع نقاط من جميع الطبقات المفعلة
+      [getFilteredSites(), getFilteredEvents(), getFilteredMissiles(), getFilteredAircraft()].forEach(layer => {
+        layer.forEach(item => {
+          if(item.lat && item.lon) points.push([item.lat, item.lon]);
         });
-      }
-
-      if(state.showEvents){
-        getFilteredEvents().forEach(item => {
-          if(Array.isArray(item.coords) && item.coords.length === 2) points.push(item.coords);
-        });
-      }
-
+      });
       if(points.length === 0) return;
       map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
     }
-
     async function loadEvents(){
       const response = await fetch(`./data/events.json?v=${Date.now()}`);
-      if(!response.ok) throw new Error("Failed to load events.json");
-      events = await response.json();
+      events = response.ok ? await response.json() : [];
     }
-
     async function loadSites(){
       const response = await fetch(`./data/sites.json?v=${Date.now()}`);
-      if(!response.ok) throw new Error("Failed to load sites.json");
-      sites = await response.json();
+      sites = response.ok ? await response.json() : [];
     }
-
     async function loadNews(){
       try{
         const apiResponse = await fetch(`./api/news?v=${Date.now()}`);
-        if(apiResponse.ok){
-          news = await apiResponse.json();
-          setHealthStatus(false);
-          return;
-        }
-      }catch(error){
-        console.error("API news failed, falling back.", error);
+        news = apiResponse.ok ? await apiResponse.json() : [];
+        setHealthStatus(false);
+      }catch{
+        const fallback = await fetch(`./data/news.json?v=${Date.now()}`);
+        news = fallback.ok ? await fallback.json() : [];
+        setHealthStatus(true);
+        showToast(translations[currentLang].apiFallbackText);
       }
-
-      const fallbackResponse = await fetch(`./data/news.json?v=${Date.now()}`);
-      if(!fallbackResponse.ok) throw new Error("Failed to load fallback news.json");
-      news = await fallbackResponse.json();
-      setHealthStatus(true);
-      showToast(translations[currentLang].apiFallbackText);
     }
-
+    async function loadMissiles(){
+      const res = await fetch(`./api/missile?v=${Date.now()}`);
+      missiles = res.ok ? await res.json() : [];
+    }
+    async function loadAircraft(){
+      if(!isPremium) return;
+      const res = await fetch(`./api/aircraft?v=${Date.now()}`); // افترض endpoint
+      aircraft = res.ok ? await res.json() : [];
+    }
+    async function loadAlerts(){
+      if(!isPremium) return;
+      const res = await fetch(`./api/alerts?v=${Date.now()}`); // افترض endpoint
+      alerts = res.ok ? await res.json() : [];
+    }
     async function loadEnergy(){
-      const response = await fetch(`./api/energy?v=${Date.now()}`);
-      if(!response.ok) throw new Error("Failed to load energy API");
-      energy = await response.json();
+      const res = await fetch(`./api/energy?v=${Date.now()}`);
+      energy = res.ok ? await res.json() : null;
     }
-
+    async function loadEnergyHistory(){
+      const res = await fetch(`./api/energy_history?v=${Date.now()}`); // افترض endpoint للتاريخ
+      energyHistory = res.ok ? await res.json() : [];
+    }
     async function refreshData(showMessage = true){
       try{
-        await Promise.all([loadEvents(), loadSites(), loadNews(), loadEnergy()]);
+        await Promise.all([
+          loadEvents(),
+          loadSites(),
+          loadNews(),
+          loadMissiles(),
+          loadAircraft(),
+          loadAlerts(),
+          loadEnergy(),
+          loadEnergyHistory()
+        ]);
         redrawAll();
         if(showMessage) showToast(translations[currentLang].refreshedText);
       }catch(error){
         console.error(error);
-        showToast(error.message || "Data loading failed");
+        showToast("فشل تحميل البيانات");
       }
     }
-
     function startAutoRefresh(){
       stopAutoRefresh();
       autoRefreshTimer = setInterval(() => {
         if(autoRefreshEnabled) refreshData(false);
-      }, 15000);
+      }, 10000); // أسرع: 10 ثوانٍ
     }
-
     function stopAutoRefresh(){
-      if(autoRefreshTimer){
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-      }
+      if(autoRefreshTimer) clearInterval(autoRefreshTimer);
     }
-
     function updateModeTexts(){
       const t = translations[currentLang];
-
-      if(currentMode === "global"){
-        document.getElementById("focusBadge").textContent = t.focusGlobal;
-        document.getElementById("chip3").textContent = t.chipGlobal;
-      } else if(currentMode === "iran"){
-        document.getElementById("focusBadge").textContent = t.focusIran;
-        document.getElementById("chip3").textContent = t.chipIran;
-      } else {
-        document.getElementById("focusBadge").textContent = t.focusMiddleEast;
-        document.getElementById("chip3").textContent = t.chipMiddleEast;
-      }
+      let focusText = t.focusMiddleEast;
+      if(currentMode === "global") focusText = t.focusGlobal;
+      if(currentMode === "iran") focusText = t.focusIran;
+      document.getElementById("focusBadge").textContent = focusText;
+      document.getElementById("chip3").textContent = focusText;
     }
-
     function updateModeButtons(){
-      document.getElementById("globalBtn").classList.toggle("active", currentMode === "global");
-      document.getElementById("middleEastBtn").classList.toggle("active", currentMode === "middle_east");
-      document.getElementById("iranBtn").classList.toggle("active", currentMode === "iran");
+      document.querySelectorAll(".button-grid .btn").forEach(btn => {
+        btn.classList.toggle("active", btn.id.replace("Btn", "").toLowerCase() === currentMode.replace("_", ""));
+      });
     }
-
     function updateQuickButtons(){
       document.querySelectorAll(".quick-chip").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.quick === currentQuick);
       });
     }
-
     function setViewMode(mode){
       currentMode = mode;
       const cfg = getModeConfig(mode);
@@ -1357,89 +1330,90 @@
       updateModeButtons();
       redrawAll();
     }
-
     function setLanguage(lang){
       currentLang = lang;
       const t = translations[lang];
-
       document.documentElement.lang = lang;
       document.documentElement.dir = t.dir;
-
+      // تحديث جميع النصوص كالمعتاد، مع إضافة الجديدة
       document.getElementById("brandSubtitle").textContent = t.brandSubtitle;
       document.getElementById("overviewTitle").textContent = t.overviewTitle;
       document.getElementById("overviewText").textContent = t.overviewText;
       document.getElementById("eventsLabel").textContent = t.eventsLabel;
       document.getElementById("sitesLabel").textContent = t.sitesLabel;
       document.getElementById("newsLabel").textContent = t.newsLabel;
+      document.getElementById("missilesLabel").textContent = t.missilesLabel;
       document.getElementById("energyLabel").textContent = t.energyLabel;
       document.getElementById("wtiLabel").textContent = t.wtiLabel;
       document.getElementById("updatedLabel").textContent = t.updatedLabel;
       document.getElementById("controlsTitle").textContent = t.controlsTitle;
+      document.getElementById("premiumTitle").textContent = t.premiumTitle;
       document.getElementById("syncBadge").textContent = t.syncText;
       document.getElementById("chip1").textContent = t.chip1;
       document.getElementById("chip2").textContent = t.chip2;
       document.getElementById("globalBtn").textContent = t.globalBtn;
       document.getElementById("middleEastBtn").textContent = t.middleEastBtn;
       document.getElementById("iranBtn").textContent = t.iranBtn;
+      document.getElementById("customRegionBtn").textContent = t.customRegionBtn;
       document.getElementById("refreshBtn").textContent = t.refreshBtn;
       document.getElementById("fitBtn").textContent = t.fitBtn;
       document.getElementById("autoRefreshText").textContent = t.autoRefreshText;
       document.getElementById("langToggle").textContent = t.langButton;
+      document.getElementById("subscribeBtn").textContent = t.subscribeText;
       document.getElementById("searchInput").placeholder = t.searchPlaceholder;
       document.getElementById("toggleSitesText").textContent = t.toggleSitesText;
       document.getElementById("toggleEventsText").textContent = t.toggleEventsText;
       document.getElementById("toggleNewsText").textContent = t.toggleNewsText;
+      document.getElementById("toggleMissilesText").textContent = t.toggleMissilesText;
       document.getElementById("toggleOnlyMilitaryText").textContent = t.toggleOnlyMilitaryText;
       document.getElementById("toggleSatelliteText").textContent = t.toggleSatelliteText;
+      document.getElementById("toggleHeatmapText").textContent = t.toggleHeatmapText;
+      document.getElementById("toggleAircraftText").textContent = t.toggleAircraftText;
       document.getElementById("tabFeed").textContent = t.tabFeed;
       document.getElementById("tabSites").textContent = t.tabSites;
       document.getElementById("tabNews").textContent = t.tabNews;
       document.getElementById("tabTimeline").textContent = t.tabTimeline;
+      document.getElementById("tabAlerts").textContent = t.tabAlerts;
       document.getElementById("legendTitle").textContent = t.legendTitle;
       document.getElementById("legendSites").textContent = t.legendSites;
       document.getElementById("legendMilitary").textContent = t.legendMilitary;
       document.getElementById("legendEnergy").textContent = t.legendEnergy;
       document.getElementById("legendOther").textContent = t.legendOther;
+      document.getElementById("legendMissiles").textContent = t.legendMissiles;
+      document.getElementById("legendAircraft").textContent = t.legendAircraft;
       document.getElementById("quickAll").textContent = lang === "ar" ? "الكل" : "All";
       document.getElementById("quickMilitary").textContent = lang === "ar" ? "عسكري" : "Military";
       document.getElementById("quickEnergy").textContent = lang === "ar" ? "طاقة" : "Energy";
       document.getElementById("quickIran").textContent = lang === "ar" ? "إيران" : "Iran";
-
+      document.getElementById("quickMissile").textContent = lang === "ar" ? "صواريخ" : "Missiles";
       updateModeTexts();
       renderEnergy();
       redrawAll();
     }
-
     function setupTabs(){
       const buttons = document.querySelectorAll(".tab-btn");
-      const panes = document.querySelectorAll(".tab-pane");
-
       buttons.forEach(btn => {
         btn.addEventListener("click", () => {
           const tab = btn.dataset.tab;
           buttons.forEach(b => b.classList.remove("active"));
-          panes.forEach(p => p.classList.remove("active"));
+          document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
           btn.classList.add("active");
           document.getElementById(`pane-${tab}`).classList.add("active");
         });
       });
     }
-
     function openSidebar(){
       document.getElementById("sidebar").classList.add("open");
       document.getElementById("drawerBackdrop").classList.add("show");
     }
-
     function closeSidebar(){
       document.getElementById("sidebar").classList.remove("open");
       document.getElementById("drawerBackdrop").classList.remove("show");
     }
-
     function toggleSidebarCollapse(){
       document.getElementById("layout").classList.toggle("sidebar-collapsed");
       setTimeout(() => map.invalidateSize(), 220);
     }
-
     function toggleFullscreenMode(){
       document.getElementById("layout").classList.toggle("map-full");
       showToast(
@@ -1449,34 +1423,40 @@
       );
       setTimeout(() => map.invalidateSize(), 220);
     }
-
+    function togglePremium(){
+      isPremium = !isPremium;
+      localStorage.setItem('premium', isPremium);
+      document.body.classList.toggle('premium-active', isPremium);
+      redrawAll();
+    }
+    function handleSubscription(){
+      const session = { id: 'mock_session' }; // استخدم Stripe checkout حقيقي
+      stripe.redirectToCheckout({ sessionId: session.id });
+    }
     document.getElementById("menuBtn").addEventListener("click", openSidebar);
     document.getElementById("drawerBackdrop").addEventListener("click", closeSidebar);
     document.getElementById("sidebarToggleBtn").addEventListener("click", toggleSidebarCollapse);
     document.getElementById("fullscreenBtn").addEventListener("click", toggleFullscreenMode);
-
     document.getElementById("langToggle").addEventListener("click", () => {
       setLanguage(currentLang === "ar" ? "en" : "ar");
     });
-
-    document.getElementById("refreshBtn").addEventListener("click", () => {
-      refreshData(true);
-    });
-
-    document.getElementById("fitBtn").addEventListener("click", () => {
-      smartFit();
-    });
-
+    document.getElementById("refreshBtn").addEventListener("click", () => refreshData(true));
+    document.getElementById("fitBtn").addEventListener("click", smartFit);
     document.getElementById("autoRefreshBtn").addEventListener("click", () => {
       autoRefreshEnabled = !autoRefreshEnabled;
       document.getElementById("autoRefreshBtn").classList.toggle("active", autoRefreshEnabled);
       showToast(autoRefreshEnabled ? translations[currentLang].autoOnText : translations[currentLang].autoOffText);
     });
-
     document.getElementById("globalBtn").addEventListener("click", () => setViewMode("global"));
     document.getElementById("middleEastBtn").addEventListener("click", () => setViewMode("middle_east"));
     document.getElementById("iranBtn").addEventListener("click", () => setViewMode("iran"));
-
+    document.getElementById("customRegionBtn").addEventListener("click", () => {
+      // منطقة مخصصة: استخدم prompt أو input
+      const lat = prompt("Lat:");
+      const lon = prompt("Lon:");
+      if(lat && lon) map.setView([parseFloat(lat), parseFloat(lon)], 5);
+    });
+    document.getElementById("subscribeBtn").addEventListener("click", handleSubscription);
     document.querySelectorAll(".quick-chip").forEach(btn => {
       btn.addEventListener("click", () => {
         currentQuick = btn.dataset.quick;
@@ -1484,32 +1464,30 @@
         redrawAll();
       });
     });
-
     document.getElementById("searchInput").addEventListener("input", (e) => {
       state.search = e.target.value;
       redrawAll();
     });
-
     document.getElementById("sitesToggle").addEventListener("change", (e) => {
       state.showSites = e.target.checked;
       redrawAll();
     });
-
     document.getElementById("eventsToggle").addEventListener("change", (e) => {
       state.showEvents = e.target.checked;
       redrawAll();
     });
-
     document.getElementById("newsToggle").addEventListener("change", (e) => {
       state.showNews = e.target.checked;
       redrawAll();
     });
-
+    document.getElementById("missilesToggle").addEventListener("change", (e) => {
+      state.showMissiles = e.target.checked;
+      redrawAll();
+    });
     document.getElementById("militaryOnlyToggle").addEventListener("change", (e) => {
       state.militaryOnly = e.target.checked;
       redrawAll();
     });
-
     document.getElementById("satelliteToggle").addEventListener("change", (e) => {
       state.showSatellite = e.target.checked;
       if(state.showSatellite){
@@ -1520,13 +1498,29 @@
         showToast(translations[currentLang].satelliteOffText);
       }
     });
-
+    document.getElementById("heatmapToggle").addEventListener("change", (e) => {
+      state.showHeatmap = e.target.checked;
+      redrawAll();
+    });
+    document.getElementById("aircraftToggle").addEventListener("change", (e) => {
+      state.showAircraft = e.target.checked;
+      redrawAll();
+    });
     setupTabs();
     setLanguage("ar");
     updateQuickButtons();
     setViewMode("middle_east");
+    document.body.classList.toggle('premium-active', isPremium);
     refreshData(false);
     startAutoRefresh();
+    // SSE للبث الحي
+    const eventSource = new EventSource('/api/live');
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if(data.type === 'missile') missiles.push(data);
+      redrawAll();
+      showToast('حدث جديد: ' + data.title);
+    };
   </script>
 </body>
 </html>
