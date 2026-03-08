@@ -1,7 +1,7 @@
 /**
- * worker.js - GeoSentinel Cloudflare Worker
- * يقدم الصفحة الرئيسية index.html + ملفات JSON الثابتة + APIs بسيطة
- * تم تطويره ليعمل مع هيكل المشروع الحالي (data/ + functions/api/)
+ * worker.js - GeoSentinel Cloudflare Worker (نسخة نهائية مطورة)
+ * يقدم index.html + كل ملفات data/*.json + APIs بسيطة
+ * يتعامل مع كل الطلبات بشكل صحيح لتحميل الخريطة والبيانات
  */
 
 addEventListener('fetch', event => {
@@ -17,9 +17,9 @@ async function handleRequest(request) {
   if (path.startsWith('/')) path = path.slice(1);
 
   // === بيانات حساب GitHub الخاص بك ===
-  // غيّر هذه القيم مرة واحدة فقط حسب حسابك
+  // غيّر هذه القيم مرة واحدة فقط
   const GITHUB_USERNAME = 'sadfg2369';       // اسم حسابك على GitHub
-  const REPO_NAME       = 'geosentinel';     // اسم الـ repository بالضبط (شوف الرابط في GitHub)
+  const REPO_NAME       = 'geosentinel';     // اسم الـ repo بالضبط (تأكد منه من رابط GitHub)
 
   const BASE_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${REPO_NAME}/main`;
 
@@ -28,7 +28,7 @@ async function handleRequest(request) {
     const htmlUrl = `${BASE_RAW_URL}/index.html`;
     try {
       const html = await fetch(htmlUrl).then(r => {
-        if (!r.ok) throw new Error('index.html not found');
+        if (!r.ok) throw new Error('index.html غير موجود');
         return r.text();
       });
       return new Response(html, {
@@ -42,7 +42,7 @@ async function handleRequest(request) {
     }
   }
 
-  // 2. تقديم أي ملف JSON داخل مجلد data (events.json, sites.json, news.json)
+  // 2. تقديم ملفات JSON من مجلد data (events.json, sites.json, news.json)
   if (path.startsWith('data/')) {
     const fileName = path.replace('data/', '');
     const fileUrl = `${BASE_RAW_URL}/data/${fileName}`;
@@ -65,11 +65,10 @@ async function handleRequest(request) {
     }
   }
 
-  // 3. تقديم API داخل functions/api (energy.js و news.js حاليًا)
+  // 3. API endpoints (مؤقتة - يمكن توسيعها)
   if (path.startsWith('api/')) {
     const apiName = path.replace('api/', '');
 
-    // API للأخبار (news.js) - حاليًا نعطي رد بسيط، يمكن توسيعه لاحقًا
     if (apiName === 'news') {
       const newsUrl = `${BASE_RAW_URL}/data/news.json`;
       try {
@@ -78,38 +77,26 @@ async function handleRequest(request) {
           headers: { 'Content-Type': 'application/json;charset=UTF-8' }
         });
       } catch (e) {
-        return new Response(
-          JSON.stringify([{ title: "خطأ في جلب الأخبار", source: "Fallback" }]),
-          { headers: { 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify([{ title: "خطأ في جلب الأخبار", source: "Fallback" }]), {
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
     }
 
-    // API لأسعار الطاقة (energy.js) - حاليًا رد ثابت، يمكن استبداله بـ API حقيقي لاحقًا
     if (apiName === 'energy') {
-      return new Response(
-        JSON.stringify({
-          updated_at: new Date().toISOString(),
-          brent_usd: 92.69,
-          wti_usd: 90.90,
-          source: "Static fallback - سيتم استبداله بـ API حي قريبًا"
-        }),
-        {
-          headers: { 'Content-Type': 'application/json;charset=UTF-8' }
-        }
-      );
+      return new Response(JSON.stringify({
+        updated_at: new Date().toISOString(),
+        brent_usd: 92.69,
+        wti_usd: 90.90,
+        source: "Static fallback - سيتم استبداله بـ API حي"
+      }), {
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+      });
     }
 
-    // أي API أخرى غير مدعومة
-    return new Response(
-      JSON.stringify({ error: `API غير مدعوم: ${apiName}` }),
-      { status: 501, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: `API غير مدعوم: ${apiName}` }), { status: 501 });
   }
 
-  // أي مسار آخر → 404
-  return new Response(
-    'الصفحة غير موجودة (404)',
-    { status: 404, headers: { 'Content-Type': 'text/plain;charset=UTF-8' } }
-  );
+  // 4. أي طلب آخر → 404
+  return new Response('الصفحة غير موجودة (404)', { status: 404 });
 }
