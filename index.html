@@ -29,7 +29,7 @@
       --success:#4dffab;
       --shadow:0 14px 34px rgba(0,0,0,.32);
       --radius:18px;
-      --sidebar-width:430px;
+      --sidebar-width:440px;
     }
 
     *{box-sizing:border-box}
@@ -143,6 +143,10 @@
       grid-template-columns:0 1fr;
     }
 
+    .layout.map-full{
+      grid-template-columns:0 1fr;
+    }
+
     .sidebar{
       background:rgba(8,20,35,.58);
       border-left:1px solid var(--line);
@@ -152,7 +156,8 @@
       transition:.2s ease;
     }
 
-    .layout.sidebar-collapsed .sidebar{
+    .layout.sidebar-collapsed .sidebar,
+    .layout.map-full .sidebar{
       padding:0;
       border-left:none;
       overflow:hidden;
@@ -180,7 +185,7 @@
 
     .stats{
       display:grid;
-      grid-template-columns:1fr 1fr 1fr;
+      grid-template-columns:1fr 1fr;
       gap:10px;
       margin-top:12px;
     }
@@ -201,6 +206,13 @@
     .stat .value{
       font-size:21px;
       font-weight:700;
+    }
+
+    .energy-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:12px;
     }
 
     .status-row{
@@ -228,6 +240,24 @@
       border-radius:50%;
       background:var(--danger);
       box-shadow:0 0 12px var(--danger);
+      display:inline-block;
+    }
+
+    .ok-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--success);
+      box-shadow:0 0 12px var(--success);
+      display:inline-block;
+    }
+
+    .warn-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--warning);
+      box-shadow:0 0 12px var(--warning);
       display:inline-block;
     }
 
@@ -447,7 +477,7 @@
       bottom:16px;
       left:16px;
       z-index:999;
-      width:310px;
+      width:320px;
       max-width:calc(100% - 32px);
       background:rgba(10,20,35,.88);
       border:1px solid var(--line);
@@ -561,7 +591,7 @@
       .toggle-grid{
         grid-template-columns:1fr;
       }
-      .stats{
+      .stats, .energy-grid{
         grid-template-columns:1fr 1fr;
       }
       .brand-meta p{
@@ -589,6 +619,7 @@
         <button class="btn" id="langToggle">English</button>
         <button class="btn" id="refreshBtn">تحديث</button>
         <button class="btn" id="fitBtn">تركيز ذكي</button>
+        <button class="btn" id="fullscreenBtn">⛶</button>
         <button class="btn primary active" id="autoRefreshBtn">
           <span class="live-dot"></span>
           <span id="autoRefreshText">تحديث تلقائي</span>
@@ -617,12 +648,27 @@
               <div class="label" id="newsLabel">الأخبار</div>
               <div class="value" id="newsCount">0</div>
             </div>
+            <div class="stat">
+              <div class="label" id="energyLabel">برنت</div>
+              <div class="value" id="brentValue">--</div>
+            </div>
+          </div>
+
+          <div class="energy-grid">
+            <div class="stat">
+              <div class="label" id="wtiLabel">WTI</div>
+              <div class="value" id="wtiValue">--</div>
+            </div>
+            <div class="stat">
+              <div class="label" id="updatedLabel">آخر تحديث</div>
+              <div class="value" id="updatedValue">--</div>
+            </div>
           </div>
 
           <div class="status-row">
             <span class="badge" id="focusBadge">التركيز: الشرق الأوسط</span>
             <span class="badge" id="syncBadge">المصدر: JSON/API</span>
-            <span class="badge"><span class="live-dot"></span><span id="liveStatusText">مراقبة فعّالة</span></span>
+            <span class="badge"><span id="healthDot" class="warn-dot"></span><span id="liveStatusText">مراقبة فعّالة</span></span>
           </div>
         </section>
 
@@ -736,6 +782,9 @@
         eventsLabel: "الأحداث",
         sitesLabel: "المواقع",
         newsLabel: "الأخبار",
+        energyLabel: "برنت",
+        wtiLabel: "WTI",
+        updatedLabel: "آخر تحديث",
         controlsTitle: "أدوات التحكم",
         focusGlobal: "التركيز: العالم",
         focusMiddleEast: "التركيز: الشرق الأوسط",
@@ -778,7 +827,11 @@
         autoOffText: "تم إيقاف التحديث التلقائي.",
         satelliteOnText: "تم تفعيل الطبقة الفضائية.",
         satelliteOffText: "تم إخفاء الطبقة الفضائية.",
-        apiFallbackText: "تم استخدام المصدر الاحتياطي للأخبار."
+        apiFallbackText: "تم استخدام المصدر الاحتياطي للأخبار.",
+        fullscreenOnText: "تم تفعيل وضع ملء الشاشة.",
+        fullscreenOffText: "تم إلغاء وضع ملء الشاشة.",
+        healthOkText: "المصدر متصل",
+        healthWarnText: "المصدر احتياطي"
       },
       en: {
         dir: "ltr",
@@ -788,6 +841,9 @@
         eventsLabel: "Events",
         sitesLabel: "Sites",
         newsLabel: "News",
+        energyLabel: "Brent",
+        wtiLabel: "WTI",
+        updatedLabel: "Updated",
         controlsTitle: "Controls",
         focusGlobal: "Focus: Global",
         focusMiddleEast: "Focus: Middle East",
@@ -830,7 +886,11 @@
         autoOffText: "Auto refresh disabled.",
         satelliteOnText: "Satellite layer enabled.",
         satelliteOffText: "Satellite layer hidden.",
-        apiFallbackText: "Fallback news source in use."
+        apiFallbackText: "Fallback news source in use.",
+        fullscreenOnText: "Fullscreen mode enabled.",
+        fullscreenOffText: "Fullscreen mode disabled.",
+        healthOkText: "Source connected",
+        healthWarnText: "Fallback source"
       }
     };
 
@@ -843,6 +903,7 @@
     let events = [];
     let sites = [];
     let news = [];
+    let energy = null;
 
     const state = {
       search: "",
@@ -890,6 +951,28 @@
       showToast._timer = setTimeout(() => {
         toast.classList.remove("show");
       }, 2400);
+    }
+
+    function formatUpdated(iso){
+      if(!iso) return "--";
+      try{
+        const d = new Date(iso);
+        return d.toLocaleTimeString(currentLang === "ar" ? "ar-SA" : "en-US", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      }catch{
+        return "--";
+      }
+    }
+
+    function setHealthStatus(isFallback){
+      const dot = document.getElementById("healthDot");
+      const text = document.getElementById("liveStatusText");
+      dot.className = isFallback ? "warn-dot" : "ok-dot";
+      text.textContent = isFallback
+        ? translations[currentLang].healthWarnText
+        : translations[currentLang].healthOkText;
     }
 
     function getModeConfig(mode){
@@ -1142,10 +1225,28 @@
         });
     }
 
+    function renderEnergy(){
+      const brentEl = document.getElementById("brentValue");
+      const wtiEl = document.getElementById("wtiValue");
+      const updatedEl = document.getElementById("updatedValue");
+
+      if(!energy){
+        brentEl.textContent = "--";
+        wtiEl.textContent = "--";
+        updatedEl.textContent = "--";
+        return;
+      }
+
+      brentEl.textContent = (typeof energy.brent_usd === "number" && energy.brent_usd > 0) ? `$${energy.brent_usd}` : "--";
+      wtiEl.textContent = (typeof energy.wti_usd === "number" && energy.wti_usd > 0) ? `$${energy.wti_usd}` : "--";
+      updatedEl.textContent = formatUpdated(energy.updated_at);
+    }
+
     function redrawAll(){
       drawSites();
       drawEvents();
       renderNewsFeed();
+      renderEnergy();
     }
 
     function smartFit(){
@@ -1184,6 +1285,7 @@
         const apiResponse = await fetch(`./api/news?v=${Date.now()}`);
         if(apiResponse.ok){
           news = await apiResponse.json();
+          setHealthStatus(false);
           return;
         }
       }catch(error){
@@ -1193,12 +1295,19 @@
       const fallbackResponse = await fetch(`./data/news.json?v=${Date.now()}`);
       if(!fallbackResponse.ok) throw new Error("Failed to load fallback news.json");
       news = await fallbackResponse.json();
+      setHealthStatus(true);
       showToast(translations[currentLang].apiFallbackText);
+    }
+
+    async function loadEnergy(){
+      const response = await fetch(`./api/energy?v=${Date.now()}`);
+      if(!response.ok) throw new Error("Failed to load energy API");
+      energy = await response.json();
     }
 
     async function refreshData(showMessage = true){
       try{
-        await Promise.all([loadEvents(), loadSites(), loadNews()]);
+        await Promise.all([loadEvents(), loadSites(), loadNews(), loadEnergy()]);
         redrawAll();
         if(showMessage) showToast(translations[currentLang].refreshedText);
       }catch(error){
@@ -1211,7 +1320,7 @@
       stopAutoRefresh();
       autoRefreshTimer = setInterval(() => {
         if(autoRefreshEnabled) refreshData(false);
-      }, 60000);
+      }, 15000);
     }
 
     function stopAutoRefresh(){
@@ -1270,9 +1379,11 @@
       document.getElementById("eventsLabel").textContent = t.eventsLabel;
       document.getElementById("sitesLabel").textContent = t.sitesLabel;
       document.getElementById("newsLabel").textContent = t.newsLabel;
+      document.getElementById("energyLabel").textContent = t.energyLabel;
+      document.getElementById("wtiLabel").textContent = t.wtiLabel;
+      document.getElementById("updatedLabel").textContent = t.updatedLabel;
       document.getElementById("controlsTitle").textContent = t.controlsTitle;
       document.getElementById("syncBadge").textContent = t.syncText;
-      document.getElementById("liveStatusText").textContent = t.liveStatusText;
       document.getElementById("chip1").textContent = t.chip1;
       document.getElementById("chip2").textContent = t.chip2;
       document.getElementById("globalBtn").textContent = t.globalBtn;
@@ -1303,6 +1414,7 @@
       document.getElementById("quickIran").textContent = lang === "ar" ? "إيران" : "Iran";
 
       updateModeTexts();
+      renderEnergy();
       redrawAll();
     }
 
@@ -1335,9 +1447,20 @@
       document.getElementById("layout").classList.toggle("sidebar-collapsed");
     }
 
+    function toggleFullscreenMode(){
+      document.getElementById("layout").classList.toggle("map-full");
+      showToast(
+        document.getElementById("layout").classList.contains("map-full")
+          ? translations[currentLang].fullscreenOnText
+          : translations[currentLang].fullscreenOffText
+      );
+      setTimeout(() => map.invalidateSize(), 220);
+    }
+
     document.getElementById("menuBtn").addEventListener("click", openSidebar);
     document.getElementById("drawerBackdrop").addEventListener("click", closeSidebar);
     document.getElementById("sidebarToggleBtn").addEventListener("click", toggleSidebarCollapse);
+    document.getElementById("fullscreenBtn").addEventListener("click", toggleFullscreenMode);
 
     document.getElementById("langToggle").addEventListener("click", () => {
       setLanguage(currentLang === "ar" ? "en" : "ar");
@@ -1413,4 +1536,4 @@
     startAutoRefresh();
   </script>
 </body>
-</html>" .. خذ وقتك قليلاً وابني اقوى ما لديك في التحديث لهذا الكود الجديد باضافات وتطور غير مسبوق يربطني حقًا بنتائج جميلة وعظيمة")]
+</html>
